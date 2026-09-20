@@ -74,10 +74,94 @@ def run_cosine_lsh_clustered():
     _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
     get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
 
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits ==========")
+
+        lsh_index = build_lsh_index(
+            d=64,
+            nbits=nbits,
+            xb=xb_clustered
+        )
+
+        _, pred_ids = search_index(
+            lsh_index,
+            noNeighbors=10,
+            noQueries=100,
+            xq=xq_clustered
+        )
+
+        get_metrics(
+            pred_ids,
+            gt_ids,
+            lsh_index,
+            xq_clustered,
+            k=10
+        )
+
+
+
+def run_flat_lsh_random():
+    """
+    Use random data for lsh search
+    """
+    xb_random, xq_random = generate_random_data()
+
+    flat_index = build_flat_index(xb_random, d=64)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_random)
+    measure_latency(flat_index, xq_random, k=10)
+    measure_index_size(flat_index)
+
+    lsh_index = build_lsh_index(d=64, nbits=256, xb=xb_random)
+    _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_random)
+    get_metrics(pred_ids, gt_ids, lsh_index, xq_random, k=10)
+
+
+
+def run_cosine_lsh_random():
+    """
+    Use random data for lsh search
+    """
+    xb_random, xq_random = generate_random_data()
+
+    cosine_index, xb_norm, xq_norm = build_flat_index_cosine(xb_random, xq_random, d=64)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    measure_latency(cosine_index, xq_norm, k=10)
+    measure_index_size(cosine_index)
+
+    lsh_index = build_lsh_index(d=64, nbits=256, xb=xb_norm)
+    _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
+
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits (random data) ==========")
+
+        lsh_index = build_lsh_index(
+            d=64,
+            nbits=nbits,
+            xb=xb_random
+        )
+
+        _, pred_ids = search_index(
+            lsh_index,
+            noNeighbors=10,
+            noQueries=100,
+            xq=xq_random
+        )
+
+        get_metrics(
+            pred_ids,
+            gt_ids,
+            lsh_index,
+            xq_random,
+            k=10
+        )
+
 
 
 def main():
-    run_flat_pq_clustered()
+    run_flat_lsh_random()
 
 
 

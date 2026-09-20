@@ -31,8 +31,8 @@ def search_index(index, noNeighbors: int, noQueries: int, xq: np.ndarray) -> tup
     # print("\nDistance between query and neighbors:")
     # print(d)
 
-    print("\nIndex of neighbors:")
-    print(i)
+    # print("\nIndex of neighbors:")
+    # print(i)
 
     return d, i
 
