@@ -98,8 +98,7 @@ def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
     """
     Build LSH index: generates nbits random hyperplanes and hashes each
     vector into an nbits-length binary code based on which side of each
-    hyperplane it falls on. Unlike PQ, no training on data is needed —
-    the hyperplanes are random and independent of the database contents.
+    hyperplane it falls on.
 
     :param d: dimension of vectors
     :param nbits: number of random hash functions (hyperplanes) / bits per code
@@ -133,3 +132,24 @@ def build_flat_index_cosine(xb: np.ndarray, xq: np.ndarray, d: int, k=10):
     add_vectors(cosine_index, xb_norm)
 
     return cosine_index, xb_norm, xq_norm
+
+
+
+def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40):
+    """
+    Build HNSW index: builds a multi-layer proximity graph where each vector
+    links to M neighbours per layer, and search greedily traverses the graph
+    from an entry point.
+
+    :param d: dimension of vectors
+    :param M: number of graph links per node
+    :param xb: vector db
+    :param efConstruction: candidate list size during graph construction
+    :return: HNSW index
+    """
+    index = faiss.IndexHNSWFlat(d, M)
+    index.hnsw.efConstruction = efConstruction
+
+    add_vectors(index, xb)
+
+    return index

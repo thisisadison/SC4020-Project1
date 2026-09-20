@@ -15,7 +15,7 @@
 
 ---
 
-## PQ
+## PQ - random data
 
 ### Run: `run_pq_l2_random()` — random data, k=10
 
@@ -66,6 +66,10 @@
 | 8 | 0.2770 | 9.450026 | 0.078093 | 1.6806 |
 | 16 | 0.6090 | 10.667675 | 0.158002 | 3.1111 |
 | 32 | 0.8880 | 15.524865 | 0.334592 | 5.9721 |
+
+---
+
+## PQ - clustered data
 
 ### Run: `run_pq_l2_clustered()` — clustered+correlated data, k=10
 
@@ -119,7 +123,49 @@
 
 ---
 
-## LSH
+## LSH — random data
+
+### Run: `run_lsh_l2_random()` — random (pre-normalized) data, L2 ground truth, k=10
+
+**Baseline (Flat, exact search)**
+| Metric | Flat |
+|---|---|
+| recall@10 | 1.0 (ground truth) |
+| build time (s) | 0.023276 |
+| latency (median, 10 repeats, s) | 0.146238 |
+| index size (MB) | 36.6211 |
+
+**LSH nbits sensitivity sweep**
+| nbits | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|---|
+| 256 | 0.2170 | 0.303144 | 0.017394 | 4.6402 |
+| 512 | 0.3710 | 0.240314 | 0.019676 | 9.2804 |
+| 1024 | 0.5370 | 0.538945 | 0.044032 | 18.5606 |
+| 2048 | 0.6660 | 2.159177 | 0.046255 | 37.1212 |
+| 4096 | 0.7270 | 7.564071 | 0.198563 | 74.2423 |
+
+### Run: `run_lsh_cosine_random()` — random (pre-normalized) data, cosine ground truth, k=10
+
+**Baseline (Cosine Flat, exact search)**
+| Metric | Cosine Flat |
+|---|---|
+| recall@10 | 1.0 (ground truth) |
+| build time (s) | 0.051388 |
+| latency (median, 10 repeats, s) | 0.099970 |
+| index size (MB) | 36.6211 |
+
+**LSH nbits sensitivity sweep**
+| nbits | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|---|
+| 256 | 0.2170 | 0.118306 | 0.019770 | 4.6402 |
+| 512 | 0.3710 | 0.184638 | 0.032814 | 9.2804 |
+| 1024 | 0.5370 | 0.979010 | 0.059998 | 18.5606 |
+| 2048 | 0.6660 | 0.959672 | 0.097421 | 37.1212 |
+| 4096 | 0.7270 | 3.334273 | 0.186199 | 74.2423 |
+
+---
+
+## LSH - clustered data
 
 ### Run: `run_lsh_l2_clustered()` — clustered+correlated data, L2 ground truth, k=10
 
@@ -161,45 +207,63 @@
 
 ---
 
-## LSH — random data
+## HNSW - random data
 
-### Run: `run_lsh_l2_random()` — random (pre-normalized) data, L2 ground truth, k=10
+### Run: `run_hnsw_l2_random()` — random (pre-normalized) data, L2 ground truth, k=10
 
 **Baseline (Flat, exact search)**
 | Metric | Flat |
 |---|---|
 | recall@10 | 1.0 (ground truth) |
-| build time (s) | 0.023276 |
-| latency (median, 10 repeats, s) | 0.146238 |
+| build time (s) | 0.017756 |
+| latency (median, 10 repeats, s) | 0.086714 |
 | index size (MB) | 36.6211 |
 
-**LSH nbits sensitivity sweep**
-| nbits | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+**HNSW efSearch sensitivity sweep — M=32 fixed (build time 5.873030s, one index reused)**
+| efSearch | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|
+| 16 | 0.2570 | 0.002141 | 75.5617 |
+| 32 | 0.4240 | 0.004043 | 75.5617 |
+| 64 | 0.5890 | 0.005679 | 75.5617 |
+| 128 | 0.7760 | 0.008615 | 75.5617 |
+
+**HNSW M sensitivity sweep — efSearch=64 fixed**
+| M | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
 |---|---|---|---|---|
-| 256 | 0.2170 | 0.303144 | 0.017394 | 4.6402 |
-| 512 | 0.3710 | 0.240314 | 0.019676 | 9.2804 |
-| 1024 | 0.5370 | 0.538945 | 0.044032 | 18.5606 |
-| 2048 | 0.6660 | 2.159177 | 0.046255 | 37.1212 |
-| 4096 | 0.7270 | 7.564071 | 0.198563 | 74.2423 |
+| 8 | 0.1590 | 3.110647 | 0.003744 | 48.1535 |
+| 16 | 0.3500 | 4.362154 | 0.004141 | 57.2683 |
+| 32 | 0.5890 | 5.873030 | 0.005679 | 75.5617 |
+| 64 | 0.6600 | 7.990787 | 0.016377 | 112.1653 |
 
-### Run: `run_lsh_cosine_random()` — random (pre-normalized) data, cosine ground truth, k=10
+---
 
-**Baseline (Cosine Flat, exact search)**
-| Metric | Cosine Flat |
+## HNSW - clustered data
+
+### Run: `run_hnsw_l2_clustered()` — clustered+correlated data, L2 ground truth, k=10
+
+**Baseline (Flat, exact search)**
+| Metric | Flat |
 |---|---|
 | recall@10 | 1.0 (ground truth) |
-| build time (s) | 0.051388 |
-| latency (median, 10 repeats, s) | 0.099970 |
-| index size (MB) | 36.6211 |
+| build time (s) | 0.013697 |
+| latency (median, 10 repeats, s) | 0.050028 |
+| index size (MB) | 31.2500 |
 
-**LSH nbits sensitivity sweep**
-| nbits | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+**HNSW efSearch sensitivity sweep — M=32 fixed (build time 4.065341s, one index reused)**
+| efSearch | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|
+| 16 | 0.8010 | 0.001261 | 64.4790 |
+| 32 | 0.9330 | 0.001826 | 64.4790 |
+| 64 | 0.9860 | 0.003218 | 64.4790 |
+| 128 | 0.9980 | 0.005407 | 64.4790 |
+
+**HNSW M sensitivity sweep — efSearch=64 fixed**
+| M | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
 |---|---|---|---|---|
-| 256 | 0.2170 | 0.118306 | 0.019770 | 4.6402 |
-| 512 | 0.3710 | 0.184638 | 0.032814 | 9.2804 |
-| 1024 | 0.5370 | 0.979010 | 0.059998 | 18.5606 |
-| 2048 | 0.6660 | 0.959672 | 0.097421 | 37.1212 |
-| 4096 | 0.7270 | 3.334273 | 0.186199 | 74.2423 |
+| 8 | 0.7470 | 1.626998 | 0.001451 | 41.0897 |
+| 16 | 0.9020 | 1.988759 | 0.002731 | 48.8696 |
+| 32 | 0.9860 | 4.065341 | 0.003218 | 64.4790 |
+| 64 | 0.9920 | 4.318806 | 0.004175 | 95.7141 |
 
 ---
 

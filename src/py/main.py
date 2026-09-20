@@ -244,8 +244,80 @@ def run_lsh_cosine_random():
 
 
 
+def run_hnsw_l2_random():
+    """
+    Use random data for hnsw search
+    """
+    xb_random, xq_random = generate_random_data()
+
+    print(f"\n========== Flat (random data) ==========")
+
+    flat_index = measure_build_time(build_flat_index, xb=xb_random, d=64)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_random)
+    flat_latency = measure_latency(flat_index, xq_random, k=10)
+    flat_size = measure_index_size(flat_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    hnsw_index = measure_build_time(build_hnsw_index, d=64, M=32, xb=xb_random)
+
+    for efSearch in [16, 32, 64, 128]:
+
+        print(f"\n========== HNSW M=32, efSearch={efSearch} (random data) ==========")
+
+        hnsw_index.hnsw.efSearch = efSearch
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_random)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_random, k=10)
+
+    for M in [8, 16, 64]:
+
+        print(f"\n========== HNSW M={M}, efSearch=64 (random data) ==========")
+
+        hnsw_index = measure_build_time(build_hnsw_index, d=64, M=M, xb=xb_random)
+        hnsw_index.hnsw.efSearch = 64
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_random)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_random, k=10)
+
+
+
+def run_hnsw_l2_clustered():
+    """
+    Use clustered data for hnsw search
+    """
+    xb_clustered, xq_clustered = generate_clustered_data()
+
+    print(f"\n========== Flat (clustered data) ==========")
+
+    flat_index = measure_build_time(build_flat_index, xb=xb_clustered, d=64)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
+    flat_latency = measure_latency(flat_index, xq_clustered, k=10)
+    flat_size = measure_index_size(flat_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    hnsw_index = measure_build_time(build_hnsw_index, d=64, M=32, xb=xb_clustered)
+
+    for efSearch in [16, 32, 64, 128]:
+
+        print(f"\n========== HNSW M=32, efSearch={efSearch} (clustered data) ==========")
+
+        hnsw_index.hnsw.efSearch = efSearch
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_clustered, k=10)
+
+    for M in [8, 16, 64]:
+
+        print(f"\n========== HNSW M={M}, efSearch=64 (clustered data) ==========")
+
+        hnsw_index = measure_build_time(build_hnsw_index, d=64, M=M, xb=xb_clustered)
+        hnsw_index.hnsw.efSearch = 64
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_clustered, k=10)
+
+
+
 def main():
-    run_pq_cosine_clustered()
+    run_hnsw_l2_clustered()
 
 
 
