@@ -4,6 +4,8 @@ from sklearn.datasets._samples_generator import make_blobs
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
 
+VERBOSE = False  # set True to see the per-step prints
+
 
 
 # get fake vector db and query for search
@@ -18,7 +20,9 @@ def generate_random_data(nb=150000, nq=100, d=64):
     :param d: dimension of vectors 
     :return: xb numpy array for vector db, xq numpy array for query
     """
-    print("\n=== Generate Random Data ===")
+    if VERBOSE:
+        print("\n=== Generate Random Data ===")
+
     # float32 for faiss
     np.random.seed(1234)  # make reproducible
 
@@ -43,7 +47,9 @@ def generate_clustered_data(nb=128000, nq=100, centers=6, n_features=64, random_
     :param random_state: Seed for reproducibility
     :return: xb (database array), xq (query array)
     """
-    print("\n=== Generate Clustered Data ===")
+    if VERBOSE:
+        print("\n=== Generate Clustered Data ===")
+
     total_samples = nb + nq
     X_raw, y = make_blobs(n_samples=total_samples, centers=centers, n_features=n_features, random_state=random_state)
 

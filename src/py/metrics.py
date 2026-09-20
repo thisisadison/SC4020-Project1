@@ -7,6 +7,8 @@ import statistics
 from dataset import generate_random_data
 from methods import *
 
+VERBOSE = False  # set True to see the per-step prints
+
 
 
 # Precision@k = (how many of your k guesses were correct) / (k, the number of guesses you made)
@@ -19,7 +21,9 @@ def precision_at_k(pred_ids: np.ndarray, gt_ids: np.ndarray, k: int) -> float:
     :param k: number of nearest neighbors
     :return: precision@k 
     """
-    print("\n=== Get Precision@k ===")
+    if VERBOSE:
+        print("\n=== Get Precision@k ===")
+
     n_queries = gt_ids.shape[0]
     precision_arr = []
 
@@ -33,7 +37,9 @@ def precision_at_k(pred_ids: np.ndarray, gt_ids: np.ndarray, k: int) -> float:
         precision_arr.append(precision)
 
     precision = np.mean(precision_arr)
-    print(f"\nprecision@{k}: {precision:.4f}")
+
+    if VERBOSE:
+        print(f"\nprecision@{k}: {precision:.4f}")
 
     return precision
 
@@ -49,7 +55,9 @@ def recall_at_k(pred_ids: np.ndarray, gt_ids: np.ndarray, k: int) -> float:
     :param k: number of nearest neighbors
     :return: recall@k 
     """
-    print("\n=== Get Recall@k ===")
+    if VERBOSE:
+        print("\n=== Get Recall@k ===")
+
     n_queries = gt_ids.shape[0]
     recall_arr = []
 
@@ -63,7 +71,9 @@ def recall_at_k(pred_ids: np.ndarray, gt_ids: np.ndarray, k: int) -> float:
         recall_arr.append(recall)
 
     recall = np.mean(recall_arr)
-    print(f"\nrecall@{k}: {recall:.4f}")
+
+    if VERBOSE:
+        print(f"\nrecall@{k}: {recall:.4f}")
 
     return recall
 
@@ -79,7 +89,9 @@ def measure_latency(index, xq: np.ndarray, k: int, n_repeats=10)-> float:
     :param n_repeats: number of repeats for averaging
     :return: average latency in seconds
     """
-    print("\n=== Get Latency ===")
+    if VERBOSE:
+        print("\n=== Get Latency ===")
+
     time_list = []
     for _ in range(n_repeats):
         start_time = time.perf_counter() # record start time
@@ -89,7 +101,8 @@ def measure_latency(index, xq: np.ndarray, k: int, n_repeats=10)-> float:
 
     median_val = statistics.median(time_list) # get the median time 
 
-    print(f"\nMedian latency for {n_repeats} repeats: {median_val:.6f} seconds")
+    if VERBOSE:
+        print(f"\nMedian latency for {n_repeats} repeats: {median_val:.6f} seconds")
 
     return median_val
 
@@ -102,14 +115,40 @@ def measure_index_size(index) -> int:
     :param index: FAISS index
     :return: size of index in bytes
     """
-    print("\n=== Get Index Size ===")
+    if VERBOSE:
+        print("\n=== Get Index Size ===")
+
     serialized_index = faiss.serialize_index(index) # serialize index to numpy byte array
     size_in_bytes = serialized_index.nbytes
     size_in_mb = size_in_bytes / (1024 * 1024)
 
-    print("\nIndex size (MB):", size_in_mb)  
+    if VERBOSE:
+        print("\nIndex size (MB):", size_in_mb)  
 
     return size_in_mb
+
+
+
+def measure_build_time(build_fn, **kwargs):
+    """
+    Measure time taken to build a FAISS index
+
+    :param build_fn: index builder function from methods.py
+    :param kwargs: arguments passed to the builder
+    :return: whatever the builder returns
+    """
+    if VERBOSE:
+        print("\n=== Get Build Time ===")
+
+    start_time = time.perf_counter() # record start time
+    result = build_fn(**kwargs) # build index, includes training where applicable
+    end_time = time.perf_counter() # record end time
+
+    build_time = end_time - start_time
+
+    print(f"build time: {build_time:.6f} seconds")
+
+    return result
 
 
 
@@ -117,9 +156,13 @@ def get_metrics(pred_ids: np.ndarray, gt_ids: np.ndarray, index, xq: np.ndarray,
     """
     Print metrics for search and index performance
     """
-    recall_at_k(pred_ids, gt_ids, k)
-    measure_latency(index, xq, k, n_repeats)
-    measure_index_size(index)
+    recall = recall_at_k(pred_ids, gt_ids, k)
+    latency = measure_latency(index, xq, k, n_repeats)
+    size = measure_index_size(index)
+
+    print(f"recall@{k}: {recall:.4f} | latency: {latency:.6f}s | index size: {size:.4f}MB\n")
+
+    return recall, latency, size
 
 
 

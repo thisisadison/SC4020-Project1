@@ -10,9 +10,7 @@ def add_vectors(index, xb: np.ndarray):
     :param index: FAISS index
     :param xb: vector db dimensions, np array
     """
-    print("\n=== Add Vectors===")
     index.add(xb)
-    print(f"\nxb = {index.ntotal} vectors added to index")
 
 
 
@@ -26,13 +24,7 @@ def search_index(index, noNeighbors: int, noQueries: int, xq: np.ndarray) -> tup
     :param xq: query dimensions, np array
     :return: d distance between query and neighbors, i index of neighbors
     """
-    print("\n=== Search Index ===")
     d, i = index.search(xq[:noQueries], noNeighbors)
-    # print("\nDistance between query and neighbors:")
-    # print(d)
-
-    # print("\nIndex of neighbors:")
-    # print(i)
 
     return d, i
 
@@ -46,9 +38,9 @@ def build_flat_index(xb: np.ndarray, d: int):
     :param d: dimension of vectors
     :return: vector db
     """
-    print("\n=== Build Flat Index ===")
+    # print("\n=== Build Flat Index ===")
     index = faiss.IndexFlatL2(d);  # build index
-    print("\nTrained:", index.is_trained)
+    # print("\nTrained:", index.is_trained)
 
     add_vectors(index, xb)
 
@@ -56,7 +48,7 @@ def build_flat_index(xb: np.ndarray, d: int):
 
 
 
-def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray):
+def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray, metric=faiss.METRIC_L2):
     """
     Build compressed vector for Product Quantization: splits each vector into m
     subspaces, learns nbits-worth of centroids per subspace via k-means,
@@ -66,12 +58,11 @@ def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray):
     :param m: number of subspaces
     :param nbits: bits per subquantizer code
     :param xb: vector db
+    :param metric: faiss.METRIC_L2 or faiss.METRIC_INNER_PRODUCT
     :return: trained, empty PQ index
     """
-    print("\n=== Build PQ Index ===")
-    index = faiss.IndexPQ(d, m, nbits)  # build index
+    index = faiss.IndexPQ(d, m, nbits, metric)  # build index
     index.train(xb) # k-means performed, create codebook
-    print("\nTrained:", index.is_trained) # learns centroids via k-mean
 
     add_vectors(index, xb)
 
@@ -92,10 +83,10 @@ def build_opq_index(d: int, m: int, nbits: int, xb: np.ndarray):
     :param xb: vector db
     :return: trained, empty PQ index
     """
-    print("\n=== Build OPQ Index ===")
+    # print("\n=== Build OPQ Index ===")
     index = faiss.index_factory(d, f"OPQ{d},PQ{m}x{nbits}", faiss.METRIC_L2)
     index.train(xb)
-    print("\nTrained:", index.is_trained)
+    # print("\nTrained:", index.is_trained)
 
     add_vectors(index, xb)
 
@@ -114,9 +105,9 @@ def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
     :param nbits: number of random hash functions (hyperplanes) / bits per code
     :return: empty LSH index, ready for add_vectors
     """
-    print("\n=== Build LSH Index ===")
+    # print("\n=== Build LSH Index ===")
     index = faiss.IndexLSH(d, nbits)
-    print("\nTrained:", index.is_trained)
+    # print("\nTrained:", index.is_trained)
 
     add_vectors(index, xb)
 
@@ -132,7 +123,7 @@ def build_flat_index_cosine(xb: np.ndarray, xq: np.ndarray, d: int, k=10):
     :param xq: query vector numpy array
     :return: cosine_index normalized cosine index, xb_norm normalized vector db, xq_norm normalized vector queries
     """
-    print("\n=== Cosine Similarity Index ===")
+    # print("\n=== Cosine Similarity Index ===")
     xb_norm = xb.copy()
     xq_norm = xq.copy()
     faiss.normalize_L2(xb_norm)
