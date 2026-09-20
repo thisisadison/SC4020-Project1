@@ -244,6 +244,44 @@ def run_lsh_cosine_random():
 
 
 
+def run_hnsw_cosine_random():
+    """
+    Use random data for hnsw search with cosine ground truth
+    """
+    xb_random, xq_random = generate_random_data()
+
+    print(f"\n========== Cosine Flat (clustered data) ==========")
+
+    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_random, xq=xq_random, d=64)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
+    flat_size = measure_index_size(cosine_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    # efSearch is a search-time knob, so one index serves the whole sweep
+    hnsw_index = measure_build_time(build_hnsw_index, d=64, M=32, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+
+    for efSearch in [16, 32, 64, 128]:
+
+        print(f"\n========== HNSW M=32, efSearch={efSearch} (clustered data, cosine ground truth) ==========")
+
+        hnsw_index.hnsw.efSearch = efSearch
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_norm, k=10)
+
+    # M=32 at efSearch=64 already measured in the loop above
+    for M in [8, 16, 64]:
+
+        print(f"\n========== HNSW M={M}, efSearch=64 (clustered data, cosine ground truth) ==========")
+
+        hnsw_index = measure_build_time(build_hnsw_index, d=64, M=M, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+        hnsw_index.hnsw.efSearch = 64
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_norm, k=10)
+
+
+
 def run_hnsw_l2_random():
     """
     Use random data for hnsw search
@@ -316,8 +354,46 @@ def run_hnsw_l2_clustered():
 
 
 
+def run_hnsw_cosine_clustered():
+    """
+    Use clustered data for hnsw search with cosine ground truth
+    """
+    xb_clustered, xq_clustered = generate_clustered_data()
+
+    print(f"\n========== Cosine Flat (clustered data) ==========")
+
+    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_clustered, xq=xq_clustered, d=64)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
+    flat_size = measure_index_size(cosine_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    # efSearch is a search-time knob, so one index serves the whole sweep
+    hnsw_index = measure_build_time(build_hnsw_index, d=64, M=32, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+
+    for efSearch in [16, 32, 64, 128]:
+
+        print(f"\n========== HNSW M=32, efSearch={efSearch} (clustered data, cosine ground truth) ==========")
+
+        hnsw_index.hnsw.efSearch = efSearch
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_norm, k=10)
+
+    # M=32 at efSearch=64 already measured in the loop above
+    for M in [8, 16, 64]:
+
+        print(f"\n========== HNSW M={M}, efSearch=64 (clustered data, cosine ground truth) ==========")
+
+        hnsw_index = measure_build_time(build_hnsw_index, d=64, M=M, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+        hnsw_index.hnsw.efSearch = 64
+        _, pred_ids = search_index(hnsw_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, hnsw_index, xq_norm, k=10)
+
+
+
 def main():
-    run_hnsw_l2_clustered()
+    run_hnsw_cosine_random()
 
 
 

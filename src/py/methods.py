@@ -135,7 +135,7 @@ def build_flat_index_cosine(xb: np.ndarray, xq: np.ndarray, d: int, k=10):
 
 
 
-def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40):
+def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40, metric=faiss.METRIC_L2):
     """
     Build HNSW index: builds a multi-layer proximity graph where each vector
     links to M neighbours per layer, and search greedily traverses the graph
@@ -145,9 +145,10 @@ def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40):
     :param M: number of graph links per node
     :param xb: vector db
     :param efConstruction: candidate list size during graph construction
+    :param metric: faiss.METRIC_L2 or faiss.METRIC_INNER_PRODUCT
     :return: HNSW index
     """
-    index = faiss.IndexHNSWFlat(d, M)
+    index = faiss.IndexHNSWFlat(d, M, metric)
     index.hnsw.efConstruction = efConstruction
 
     add_vectors(index, xb)

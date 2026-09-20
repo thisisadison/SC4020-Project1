@@ -235,6 +235,32 @@
 | 32 | 0.5890 | 5.873030 | 0.005679 | 75.5617 |
 | 64 | 0.6600 | 7.990787 | 0.016377 | 112.1653 |
 
+### Run: `run_hnsw_cosine_random()` — random (pre-normalized) data, cosine ground truth, k=10
+
+**Baseline (Cosine Flat, exact search)**
+| Metric | Cosine Flat |
+|---|---|
+| recall@10 | 1.0 (ground truth) |
+| build time (s) | 0.054714 |
+| latency (median, 10 repeats, s) | 0.109233 |
+| index size (MB) | 36.6211 |
+
+**HNSW efSearch sensitivity sweep — M=32 fixed (build time 7.246802s, one index reused)**
+| efSearch | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|
+| 16 | 0.2730 | 0.001706 | 75.5617 |
+| 32 | 0.4140 | 0.003040 | 75.5617 |
+| 64 | 0.5900 | 0.004561 | 75.5617 |
+| 128 | 0.7520 | 0.007753 | 75.5617 |
+
+**HNSW M sensitivity sweep — efSearch=64 fixed**
+| M | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|---|
+| 8 | 0.1470 | 2.717913 | 0.002364 | 48.1535 |
+| 16 | 0.3410 | 3.968604 | 0.008706 | 57.2683 |
+| 32 | 0.5900 | 7.246802 | 0.004561 | 75.5617 |
+| 64 | 0.6700 | 9.258889 | 0.009552 | 112.1653 |
+
 ---
 
 ## HNSW - clustered data
@@ -265,6 +291,32 @@
 | 32 | 0.9860 | 4.065341 | 0.003218 | 64.4790 |
 | 64 | 0.9920 | 4.318806 | 0.004175 | 95.7141 |
 
+### Run: `run_hnsw_cosine_clustered()` — clustered+correlated data, cosine ground truth, k=10
+
+**Baseline (Cosine Flat, exact search)**
+| Metric | Cosine Flat |
+|---|---|
+| recall@10 | 1.0 (ground truth) |
+| build time (s) | 0.031841 |
+| latency (median, 10 repeats, s) | 0.079028 |
+| index size (MB) | 31.2500 |
+
+**HNSW efSearch sensitivity sweep — M=32 fixed (build time 4.062337s, one index reused)**
+| efSearch | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|
+| 16 | 0.8030 | 0.001146 | 64.4790 |
+| 32 | 0.9320 | 0.002512 | 64.4790 |
+| 64 | 0.9810 | 0.003094 | 64.4790 |
+| 128 | 0.9970 | 0.005693 | 64.4790 |
+
+**HNSW M sensitivity sweep — efSearch=64 fixed**
+| M | recall@10 | build time (s) | latency (median, 10 repeats, s) | index size (MB) |
+|---|---|---|---|---|
+| 8 | 0.7350 | 1.494969 | 0.001746 | 41.0897 |
+| 16 | 0.8960 | 1.876298 | 0.002713 | 48.8696 |
+| 32 | 0.9810 | 4.062337 | 0.003094 | 64.4790 |
+| 64 | 0.9940 | 3.924521 | 0.019436 | 95.7141 |
+
 ---
 
 ## Open questions / to revisit
@@ -276,71 +328,120 @@
 
 ## PQ
 
-* **PQ greatly reduces index size.**
-  PQ indexes were much smaller than Flat because each vector is stored using a compressed code instead of its original floating-point values.
+* **PQ substantially reduces index size compared with Flat.**
 
-* **PQ was generally slower than Flat in these experiments.**
-  Although PQ reduces storage, it still needs to perform approximate distance calculations using the compressed representation. In these runs, this resulted in higher search latency than Flat.
+  Across the experiments, PQ indexes were much smaller than the Flat index. For example, on random data, the Flat index was **36.62 MB**, while PQ ranged from **0.97–5.97 MB**. On clustered data, PQ ranged from **0.86–5.13 MB** compared with **31.25 MB** for Flat.
 
-* **Increasing `nbits` generally improves recall.**
-  For `m=32`, recall increased from **0.638 → 0.786 → 0.865** as `nbits` increased from 6 → 8 → 10. More bits provide more centroids for representing each subspace, reducing quantisation error.
+* **Increasing `nbits` consistently improves recall.**
 
-* **Increasing `m` has a large effect on recall.**
-  With `nbits=10`, recall increased from **0.092 → 0.275 → 0.574 → 0.865** as `m` increased from 4 → 8 → 16 → 32. More subspaces allow the vector to be represented more finely across its dimensions.
+  With `m=32`, recall increased as `nbits` increased. On random L2 data, recall rose from **0.638 → 0.786 → 0.865** for 6 → 8 → 10 bits. The same trend appeared on clustered L2 data, increasing from **0.452 → 0.707 → 0.839**.
 
-* **Clustered data generally produced lower PQ recall than random data.**
-  For example, at `m=32, nbits=10`, recall was **0.865 on random data compared with 0.839 on clustered data** for L2. This suggests that the particular structure of the clustered dataset was harder for this PQ configuration to represent accurately.
+* **Increasing `m` also substantially improves recall.**
 
-* **Cosine and L2 produced different PQ recall on the clustered data.**
-  At `m=32, nbits=10`, recall was **0.839 for L2 compared with 0.352 for cosine**. This is because normalising the vectors changes the vectors themselves, so cosine search is not the same task as L2 search on the original vectors.
+  With `nbits=10`, random L2 recall increased from **0.092 → 0.275 → 0.574 → 0.865** as `m` increased from 4 → 8 → 16 → 32. This shows that using more subspaces allowed the vectors to be represented more accurately.
 
-## LSH — Clustered Data
+* **Higher recall comes at the cost of larger indexes.**
 
-* **LSH had low recall at small numbers of bits.**
-  At 256 bits, recall was only **0.046**, meaning that on average fewer than 1 of the 10 true nearest neighbours was retrieved.
+  On clustered L2 data, increasing `m` from 4 to 32 increased the index size from **0.86 MB to 5.13 MB**, while recall increased from **0.127 to 0.839**. Similarly, increasing `nbits` from 6 to 10 increased the index size from **2.95 MB to 5.13 MB**, while recall increased from **0.452 to 0.839**.
 
-* **Increasing `nbits` improved recall.**
-  Recall increased from **0.046 → 0.457** as `nbits` increased from 256 → 4096. More hash bits provide more information for distinguishing between vectors.
+* **PQ build time is much higher than Flat.**
 
-* **Increasing `nbits` also increases index size.**
-  The index grew from **3.97 MB at 256 bits → 63.50 MB at 4096 bits**. Therefore, higher recall comes at the cost of more storage.
+  For example, on clustered L2 data, Flat took only **0.018s** to build, while PQ with `m=32, nbits=10` took **11.60s**. This is the main computational cost of PQ in these experiments.
 
-* **LSH had very low build time.**
-  At 256 bits, the LSH index took only **0.087s** to build, compared with **11.60s for PQ** in the corresponding clustered experiment. This is because LSH does not need to learn a codebook from the dataset.
+* **PQ recall was lower on clustered data than random data for L2.**
 
-* **LSH remained less accurate than PQ in these experiments.**
-  For example, on clustered L2, PQ with `m=32, nbits=8` achieved **0.707 recall with a 3.97 MB index**, while LSH with 256 bits achieved only **0.046 recall with the same index size**.
+  At `m=32, nbits=10`, recall was **0.865 on random data** compared with **0.839 on clustered data**. The difference is relatively small, but the clustered dataset was slightly harder for this configuration.
+
+* **Cosine search showed a much larger drop in PQ recall on clustered data.**
+
+  At `m=32, nbits=10`, clustered-data recall was **0.839 for L2 but only 0.352 for cosine**. This indicates that the PQ configuration represented the cosine-search neighbourhoods much less accurately in this dataset.
 
 ## LSH — Random Data
 
-* **LSH performed substantially better on random data than clustered data.**
-  At 256 bits, recall was **0.217 on random data compared with 0.046 on clustered data**. At 4096 bits, it was **0.727 compared with 0.457**.
+* **LSH recall increases as the number of hash bits increases.**
 
-* **This shows that data-independent hashing does not mean data-independent performance.**
-  The random hyperplanes are generated independently of the dataset, but their ability to preserve nearest-neighbour relationships can still vary depending on the structure of the data.
+  On random data, recall increased from **0.217 → 0.371 → 0.537 → 0.666 → 0.727** as `nbits` increased from 256 → 512 → 1024 → 2048 → 4096.
 
-* **Increasing `nbits` creates a recall–storage trade-off.**
-  Recall increased from **0.217 → 0.727**, while index size increased from **4.64 MB → 74.24 MB**.
+* **Increasing `nbits` increases index size substantially.**
 
-* **L2 and cosine produced the same recall on the random data.**
-  The random vectors are normalised to unit length. For unit vectors:
+  The index grew from **4.64 MB at 256 bits** to **74.24 MB at 4096 bits**. Therefore, improving recall required a significant increase in storage.
 
-  $$
-  \|x-y\|^2 = 2 - 2(x\cdot y)
-  $$
+* **LSH has relatively low build time.**
 
-  Therefore, L2 distance and cosine similarity produce the same nearest-neighbour ranking.
+  Build time remained low at smaller numbers of bits: the 256-bit index took only **0.30s** to build for L2 and **0.12s** for cosine. Build time increased as more hash bits were added, reaching **7.56s** for 4096-bit L2 and **3.33s** for 4096-bit cosine.
+
+* **L2 and cosine produced identical recall on the random dataset.**
+
+  Recall was identical for every `nbits` value in the L2 and cosine experiments. This is consistent with the random dataset being pre-normalized, where L2 distance and cosine similarity produce the same nearest-neighbour ranking.
+
+## LSH — Clustered Data
+
+* **LSH recall was substantially lower on clustered data than random data.**
+
+  At 256 bits, recall was only **0.046 on clustered data**, compared with **0.217 on random data**. At 4096 bits, recall reached **0.457 on clustered data**, compared with **0.727 on random data**.
+
+* **Increasing `nbits` still improves recall, but the improvement is limited.**
+
+  On clustered L2 data, recall increased from **0.046 → 0.457** as `nbits` increased from 256 → 4096. However, even with 4096 bits, recall remained below the random-data result of **0.727**.
+
+* **Higher recall requires substantially more storage.**
+
+  The clustered L2 index increased from **3.97 MB at 256 bits** to **63.50 MB at 4096 bits**, while recall increased from **0.046 to 0.457**.
+
+* **The clustered dataset was more difficult for LSH than the random dataset.**
+
+  The lower recall across all tested bit counts shows that the random-hyperplane hashing used here preserved the nearest-neighbour relationships less effectively for the clustered and correlated data.
+
+## HNSW — Random Data
+
+* **Increasing `efSearch` consistently improves recall.**
+
+  With `M=32`, random L2 recall increased from **0.257 → 0.424 → 0.589 → 0.776** as `efSearch` increased from 16 → 32 → 64 → 128. Cosine showed a similar trend, increasing from **0.273 → 0.414 → 0.590 → 0.752**.
+
+* **Higher `efSearch` increases search latency.**
+
+  For random L2 data, latency increased from **0.0021s at `efSearch=16`** to **0.0086s at `efSearch=128`**. Thus, higher recall required more search time.
+
+* **Increasing `M` improves recall but increases index size and build time.**
+
+  With `efSearch=64`, random L2 recall increased from **0.159 at `M=8`** to **0.660 at `M=64`**. At the same time, index size increased from **48.15 MB to 112.17 MB**, while build time increased from **3.11s to 7.99s**.
+
+* **HNSW was much larger than Flat in these experiments.**
+
+  The Flat index was **36.62 MB**, while HNSW ranged from **48.15 MB to 112.17 MB** depending on `M`.
+
+## HNSW — Clustered Data
+
+* **HNSW performed substantially better on clustered data than random data.**
+
+  With `M=32`, increasing `efSearch` from 16 to 128 increased clustered L2 recall from **0.801 → 0.933 → 0.986 → 0.998**. This was much higher than the corresponding random-data recalls of **0.257 → 0.424 → 0.589 → 0.776**.
+
+* **Clustered data achieved very high recall with relatively low latency.**
+
+  At `M=32, efSearch=64`, clustered L2 achieved **0.986 recall** with a median latency of only **0.0032s**. At `efSearch=128`, recall increased further to **0.998** with **0.0054s** latency.
+
+* **Increasing `M` improves recall, but with additional storage and build cost.**
+
+  At `efSearch=64`, clustered L2 recall increased from **0.747 at `M=8`** to **0.992 at `M=64`**. Index size increased from **41.09 MB to 95.71 MB**.
+
+* **The effect of `M` was particularly strong on clustered data.**
+
+  Increasing `M` from 8 to 32 increased clustered L2 recall from **0.747 to 0.986**, while the same change on random L2 data increased recall from **0.159 to 0.589**.
 
 ## PQ vs LSH
 
-* **PQ provided higher recall at comparable index sizes.**
-  For example, on clustered L2, PQ with `m=32, nbits=8` achieved **0.707 recall with a 3.97 MB index**, while LSH with 256 bits achieved only **0.046 recall with the same index size**.
+* **PQ achieved higher recall at comparable index sizes in these experiments.**
 
-* **LSH's main advantage was build time.**
-  LSH does not require training a codebook, allowing it to be built much faster than PQ.
+  On clustered L2 data, PQ with `m=32, nbits=8` achieved **0.707 recall with a 3.97 MB index**, while LSH with 256 bits achieved **0.046 recall with a 3.97 MB index**.
 
-* **Both methods have a recall–storage trade-off.**
-  PQ improves its representation by increasing the number of centroids available for its subspaces, while LSH improves its representation by increasing the number of hash bits.
+* **PQ required much longer build times than LSH.**
 
-* **PQ was more effective at using the available storage in these experiments.**
-  LSH achieved lower recall at comparable index sizes, while its main advantage was its much lower build time.
+  For the same clustered L2 comparison, PQ took **2.85s** to build while LSH took only **0.087s**. At the larger configurations, PQ with `m=32, nbits=10` took **11.60s**, while LSH with 4096 bits took **3.98s**.
+
+* **Both methods show a recall–storage trade-off, but through different parameters.**
+
+  PQ improves recall by increasing `m` or `nbits`, which also increases the compressed index size. LSH improves recall by increasing the number of hash bits, which directly increases index size.
+
+* **PQ used the available storage more effectively for recall in these experiments.**
+
+  At similar index sizes, PQ generally achieved substantially higher recall than LSH. However, LSH provided much shorter build times, making build cost an important distinction between the two approaches.
