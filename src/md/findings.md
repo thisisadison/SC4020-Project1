@@ -71,6 +71,7 @@
 ### LSH — observations (across all runs above)
 - LSH on clustered/correlated data achieves substantially lower latency and index size than exact Flat search, but with significantly lower recall at 256 bits. Increasing nbits improves recall consistently, but increases both index size and search latency. 
 - LSH performs worse on the clustered/correlated dataset than on the random dataset across all tested nbits values. Switching from L2 to cosine ground truth produces negligible changes in recall, suggesting that the low recall is not primarily due to metric mismatch.
+- this implies that while lsh is a data independent method as their hash functions are randomly generated,their retrieval performance may not be similarly independent.
 
 ---
 
@@ -104,26 +105,7 @@
 - LSH on random data achieves substantially lower latency and index size than exact Flat search at low nbits, while providing higher recall than LSH on clustered/correlated data. 
 - Increasing nbits consistently improves recall, reaching 0.727 at 4096 bits, but this comes with substantial increases in index size and search latency. The results demonstrate a clear recall–efficiency trade-off.
 
-
 ---
-
-## OPQ — not yet run in `main.py`
-`build_opq_index(d, m, nbits, xb)` exists but no `run_*` experiment function calls it yet.
-
-### OPQ — observations
--
-
----
-
-## Bugs fixed along the way
-- `np.append()` not reassigned inside loop (metrics.py) — silently produced empty/wrong arrays
-- `search_index`'s self-search sanity check used the wrong array (`xq` instead of `xb`)
-- `build_flat_index_cosine` originally computed `xq_norm` but didn't return it — broke the cosine ground truth test until fixed (now returns `xb_norm`, `xq_norm` too)
 
 ## Open questions / to revisit
 -
-
-## Parameter sensitivity to test (project plan requirement)
-- PQ: `m`, `nbits`
-- LSH: `nbits`
-- (add HNSW once built: `M`, `efSearch`)
