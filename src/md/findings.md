@@ -17,12 +17,12 @@
 
 ## PQ
 
-### Run: `run_flat_pq_random()` — random data, m=32, nbits=9, k=10
+### Run: `run_flat_pq_random()` — random data, m=32, nbits=10, k=10
 | Metric | Flat | PQ |
 |---|---|---|
-| recall@10 | 1.0 | |
-| latency (median, 10 repeats, s) | | |
-| index size (MB) | | |
+| recall@10 | 1.0 | 0.8650 |
+| latency (median, 10 repeats, s) | 0.154630 | 0.390833 |
+| index size (MB) | 36.62113666534424 | 5.972127914428711 |
 
 ### Run: `run_flat_pq_clustered()` — clustered+correlated data, m=32, nbits=10, k=10
 | Metric | Flat | PQ |
@@ -47,26 +47,21 @@
 | latency (median, 10 repeats, s) | 0.066568 | 0.010903 |
 | index size (MB) | 31.25004291534424 | 3.968838691711426 |
 
-### Run: `run_cosine_lsh_clustered()` — same data, cosine ground truth instead of L2, nbits=256, k=10
-**Purpose:** test whether LSH's low recall (above) is a metric mismatch (LSH targets cosine similarity, not L2)
-
+### Run: `run_cosine_lsh_clustered()` — clustered+correlated data, cosine ground truth, nbits=256, k=10
 | Metric | Cosine Flat | LSH |
 |---|---|---|
 | recall@10 | 1.0 | 0.0500 |
-| latency (median, 10 repeats, s) | 0.082911 | 0.014785 |
+| latency (median, 10 repeats, s) | 0.071612 | 0.012149 |
 | index size (MB) | 31.25004291534424 | 3.968838691711426 |
 
-**Result:** unchanged from the L2 ground truth result — confirms the metric-mismatch hypothesis was wrong (see PQ/LSH observations below).
-
-### LSH nbits sensitivity sweep (cosine ground truth, k=10, same data)
+### LSH nbits sensitivity sweep — clustered+correlated data, k=10
 | nbits | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
 |---|---|---|---|
-| 256 | 0.0500 | 0.014672 | 3.968838691711426 |
-| 512 | 0.1160 | 0.014410 | 7.937588691711426 |
-| 1024 | 0.2140 | 0.045902 | 15.875088691711426 |
-| 2048 | 0.3420 | 0.090716 | 31.750088691711426 |
-| 4096 | 0.5120 | 0.224803 | 63.500088691711426 |
-
+| 256 | 0.0500 | 0.012149 | 3.968838691711426 |
+| 512 | 0.1160 | 0.014371 | 7.937588691711426 |
+| 1024 | 0.2140 | 0.047514 | 15.875088691711426 |
+| 2048 | 0.3420 | 0.070373 | 31.750088691711426 |
+| 4096 | 0.5120 | 0.164531 | 63.500088691711426 |
 
 ### LSH — observations (across all runs above)
 - LSH on clustered/correlated data achieves substantially lower latency and index size than exact Flat search, but with significantly lower recall at 256 bits. Increasing nbits improves recall consistently, but increases both index size and search latency. 
@@ -84,21 +79,21 @@
 | latency (median, 10 repeats, s) | 0.081240 | 0.013934 |
 | index size (MB) | 36.62113666534424 | 4.640225410461426 |
 
-### Run: `run_flat_lsh_random()` / `run_cosine_lsh_random()` — random (pre-normalized) data, nbits=256, k=10
+### Run: `run_cosine_lsh_random()` — random (pre-normalized) data, nbits=256, k=10
 | Metric | Cosine Flat | LSH |
 |---|---|---|
 | recall@10 | 1.0 | 0.2170 |
-| latency (median, 10 repeats, s) | 0.093046 | 0.017274 |
+| latency (median, 10 repeats, s) | 0.088885 | 0.013286 |
 | index size (MB) | 36.62113666534424 | 4.640225410461426 |
 
 ### LSH nbits sensitivity sweep — random data, k=10
 | nbits | recall@10 | latency (median, 10 repeats, s) | index size (MB) |
 |---|---|---|---|
-| 256 | 0.2170 | 0.015804 | 4.640225410461426 |
-| 512 | 0.3710 | 0.018039 | 9.280362129211426 |
-| 1024 | 0.5370 | 0.049788 | 18.560635566711426 |
-| 2048 | 0.6660 | 0.072901 | 37.121182441711426 |
-| 4096 | 0.7270 | 0.194392 | 74.24227619171143 |
+| 256 | 0.2170 | 0.013286 | 4.640225410461426 |
+| 512 | 0.3710 | 0.030558 | 9.280362129211426 |
+| 1024 | 0.5370 | 0.052244 | 18.560635566711426 |
+| 2048 | 0.6660 | 0.084907 | 37.121182441711426 |
+| 4096 | 0.7270 | 0.212684 | 74.24227619171143 |
 
 
 ### LSH Random — observations (across all runs above)
