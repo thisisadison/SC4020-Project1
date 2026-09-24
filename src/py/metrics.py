@@ -213,25 +213,6 @@ def save_results(path: str):
 
 
 
-
-def test_metrics():
-    xb, xq = generate_random_data(nb=1000, nq=100, d=64)
-    dim = xb.shape[1]
-
-    index = build_flat_index(dim)
-    add_vectors(index, xb)
-
-    k = 10 # top k entries
-    _, gt_ids = search_index(index, noNeighbors=k, noQueries=len(xq), xq=xq)
-    _, pred_ids = search_index(index, noNeighbors=k, noQueries=len(xq), xq=xq)
-
-    measure_latency(index, xq, k)
-    precision_at_k(pred_ids, gt_ids, k)
-    recall_at_k(pred_ids, gt_ids, k)
-    measure_index_size(index)
-
-
-
 # def main():
 #     test_metrics()
 
