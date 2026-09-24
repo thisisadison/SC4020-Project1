@@ -10,7 +10,7 @@ Given a vector of dimension `d`, PQ divides it into `m` subspaces:
 d / m = dimensions per subspace
 ```
 
-For `d = 64` and `m = 32`, each subspace contains 2 dimensions.
+For `d = 384` and `m = 32`, each subspace contains 12 dimensions.
 
 For each subspace, k-means clustering is performed to create a codebook of `2^nbits` centroids. For example, with `nbits = 10`:
 
@@ -28,7 +28,7 @@ For example:
 
 ```text
 Original vector:
-[x₁, x₂, x₃, ..., x₆₄]
+[x₁, x₂, x₃, ..., x₃₈₄]
 
 PQ code:
 [731, 12, 891, ..., 204]

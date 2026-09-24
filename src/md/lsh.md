@@ -33,13 +33,13 @@ x = [x₁, x₂, ..., x_d]
 For example, with:
 
 ```text
-d = 64
+d = 384
 ```
 
 each vector is represented as:
 
 ```text
-x ∈ R⁶⁴
+x ∈ R³⁸⁴
 ```
 
 The vector contains continuous floating-point values.
@@ -158,14 +158,14 @@ K projections → K-bit hash code
 For example:
 
 ```text
-d = 64
+d = 384
 nbits = 256
 ```
 
 means:
 
 ```text
-Original vector: 64 floating-point values
+Original vector: 384 floating-point values
 
 Hash code:       256 binary bits
 ```
@@ -399,13 +399,13 @@ d × 32 bits
 For:
 
 ```text
-d = 64
+d = 384
 ```
 
 this is:
 
 ```text
-64 × 32 = 2048 bits
+384 × 32 = 12,288 bits
 ```
 
 A 256-bit LSH code requires:
@@ -420,9 +420,9 @@ Conceptually:
 
 ```text
 Original vector
-64 × float32
+384 × float32
       ↓
-2048 bits
+12,288 bits
 
 LSH representation
 256 bits
@@ -443,13 +443,13 @@ index = faiss.IndexLSH(d, nbits)
 For example:
 
 ```python
-index = faiss.IndexLSH(64, 256)
+index = faiss.IndexLSH(384, 256)
 ```
 
 where:
 
 ```text
-d = 64
+d = 384
 nbits = 256
 ```
 

@@ -201,6 +201,42 @@ Speedup = Flat latency / method latency, measured in the same run, so database s
 
 ---
 
+## Ablation — LSH with learned thresholds
+
+Standard LSH splits every hyperplane at 0; the ablation learns each split point from the data (the median projection, `train_thresholds=True`). Everything else is identical.
+
+### `run_lsh_ablation()` — random data, L2 ground truth, k=10
+
+| nbits | recall@10 (split at 0) | recall@10 (learned) | change | build (s, learned) | size (MB) |
+|---|---|---|---|---|---|
+| 256 | 0.0210 | 0.0210 | +0.0000 | 0.71 | 3.43 |
+| 512 | 0.0980 | 0.0970 | -0.0010 | 1.85 | 6.86 |
+| 1024 | 0.1930 | 0.1940 | +0.0010 | 2.64 | 13.71 |
+| 2048 | 0.3210 | 0.3250 | +0.0040 | 6.68 | 27.42 |
+| 4096 | 0.4720 | 0.4640 | -0.0080 | 19.18 | 54.84 |
+
+### `run_lsh_ablation()` — clustered+correlated data, L2 ground truth, k=10
+
+| nbits | recall@10 (split at 0) | recall@10 (learned) | change | build (s, learned) | size (MB) |
+|---|---|---|---|---|---|
+| 256 | 0.0090 | 0.0160 | +0.0070 | 0.61 | 3.43 |
+| 512 | 0.0240 | 0.0210 | -0.0030 | 1.21 | 6.86 |
+| 1024 | 0.0430 | 0.0640 | +0.0210 | 2.32 | 13.71 |
+| 2048 | 0.0980 | 0.1130 | +0.0150 | 5.88 | 27.42 |
+| 4096 | 0.1660 | 0.2410 | +0.0750 | 33.31 | 54.84 |
+
+### `run_lsh_ablation()` — FinanceBench, L2 ground truth, k=10
+
+| nbits | recall@10 (split at 0) | recall@10 (learned) | change | build (s, learned) | size (MB) |
+|---|---|---|---|---|---|
+| 256 | 0.3140 | 0.3247 | +0.0107 | 0.72 | 3.56 |
+| 512 | 0.4873 | 0.4780 | -0.0093 | 1.27 | 7.11 |
+| 1024 | 0.6133 | 0.5633 | -0.0500 | 2.68 | 14.22 |
+| 2048 | 0.6993 | 0.6220 | -0.0773 | 7.09 | 28.44 |
+| 4096 | 0.7913 | 0.6660 | -0.1253 | 22.69 | 56.88 |
+
+---
+
 # Observations and conclusions — d = 384
 
 Format: **claim**: evidence from the tables → *why* (theory).
@@ -289,7 +325,9 @@ EDA numbers are computed on the normalised random and clustered vectors. Finance
   | PQ (m=192, nbits=10) | 0.853 | 0.851 | **0.957** |
   | HNSW (M=32, efSearch=256) | 0.377 | 0.982 | **0.989** |
 
-- **All three methods do best on real data**, even though every dataset has 384 dimensions. *Text embeddings lie near a much lower-dimensional structure (companies, statement types, topics). Random data genuinely uses all 384 dimensions: 323 of them are needed to keep 90% of the variance (eda4).*
+- **All three methods do best on real data**, even though every dataset has 384 dimensions.
+  - Dimensions needed to keep 90% of the variance: clustered 5, FinanceBench 171, random 323 (eda4). Dimension count alone does not explain difficulty: clustered uses the fewest dimensions but is LSH's worst dataset.
+  - What differs is how clearly the true neighbours stand apart (eda3): FinanceBench neighbours spread over cosine 0.45–0.85 against random pairs at about 0.2, whereas random data's neighbours barely stand out (gap 0.20) and clustered data's are packed into one narrow spike.
 - **HNSW depends on global contrast.**
   - On random data the average point is only 1.13× as far away as the nearest one; on clustered data it is 6.2×.
   - HNSW recall follows: 0.377 vs 0.982.
