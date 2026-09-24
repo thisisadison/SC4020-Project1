@@ -1,365 +1,278 @@
 # Findings — d = 384
 
 All datasets d=384. Synthetic: 100,000 vectors, 100 queries. FinanceBench: 104,169 passages, 150 questions.
+Metric: every vector is L2-normalised and the ground truth is cosine similarity (exact `IndexFlatIP` on the normalised vectors). On unit vectors cosine and L2 rank neighbours identically, so each method runs its native metric: angle for LSH, L2 for PQ, inner product for HNSW.
 Speedup = Flat latency / method latency, measured in the same run, so database size and query count cancel out.
 
 ---
 
 ## LSH
 
-### `run_lsh_l2_random()` — random data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.033s · latency 0.3953s · size 146.48 MB
-
-**nbits sweep**
-
-| nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 256 | 0.0210 | 0.11 | 0.0077 | 51.4× | 3.43 |
-| 512 | 0.0980 | 0.17 | 0.0142 | 27.9× | 6.85 |
-| 1024 | 0.1930 | 0.45 | 0.0151 | 26.2× | 13.71 |
-| 2048 | 0.3210 | 1.28 | 0.0329 | 12.0× | 27.41 |
-| 4096 | 0.4720 | 7.69 | 0.1248 | 3.2× | 54.83 |
-
 ### `run_lsh_cosine_random()` — random data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.055s · latency 0.3557s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.145s · latency 0.4866s · size 146.48 MB
 
 **nbits sweep**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 256 | 0.0210 | 0.18 | 0.0142 | 25.0× | 3.43 |
-| 512 | 0.0980 | 0.20 | 0.0180 | 19.8× | 6.85 |
-| 1024 | 0.1930 | 0.40 | 0.0181 | 19.7× | 13.71 |
-| 2048 | 0.3210 | 1.26 | 0.0310 | 11.5× | 27.41 |
-| 4096 | 0.4720 | 6.55 | 0.0828 | 4.3× | 54.83 |
-
-### `run_lsh_l2_clustered()` — clustered+correlated data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.032s · latency 0.4296s · size 146.48 MB
-
-**nbits sweep**
-
-| nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 256 | 0.0080 | 0.08 | 0.0080 | 53.6× | 3.43 |
-| 512 | 0.0170 | 0.16 | 0.0094 | 45.8× | 6.85 |
-| 1024 | 0.0360 | 0.33 | 0.0167 | 25.7× | 13.71 |
-| 2048 | 0.1000 | 1.77 | 0.1186 | 3.6× | 27.41 |
-| 4096 | 0.1540 | 11.40 | 0.1802 | 2.4× | 54.83 |
+| 256 | 0.0210 | 0.51 | 0.0251 | 19.4× | 3.43 |
+| 512 | 0.0980 | 0.46 | 0.0125 | 38.9× | 6.85 |
+| 1024 | 0.1930 | 0.59 | 0.0275 | 17.7× | 13.71 |
+| 2048 | 0.3210 | 1.24 | 0.0549 | 8.9× | 27.41 |
+| 4096 | 0.4720 | 5.81 | 0.1321 | 3.7× | 54.83 |
 
 ### `run_lsh_cosine_clustered()` — clustered+correlated data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.098s · latency 0.4589s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.057s · latency 0.3617s · size 146.48 MB
 
 **nbits sweep**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 256 | 0.0090 | 0.17 | 0.0130 | 35.4× | 3.43 |
-| 512 | 0.0240 | 0.55 | 0.0145 | 31.6× | 6.85 |
-| 1024 | 0.0430 | 1.00 | 0.0191 | 24.1× | 13.71 |
-| 2048 | 0.0980 | 1.71 | 0.0627 | 7.3× | 27.41 |
-| 4096 | 0.1660 | 8.40 | 0.1356 | 3.4× | 54.83 |
+| 256 | 0.0090 | 0.09 | 0.0079 | 45.5× | 3.43 |
+| 512 | 0.0240 | 0.13 | 0.0107 | 33.9× | 6.85 |
+| 1024 | 0.0430 | 0.33 | 0.0195 | 18.5× | 13.71 |
+| 2048 | 0.0980 | 1.24 | 0.0463 | 7.8× | 27.41 |
+| 4096 | 0.1660 | 6.54 | 0.1072 | 3.4× | 54.83 |
 
 ### `run_lsh_cosine_finance()` — FinanceBench, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.103s · latency 0.5597s · size 152.59 MB
+**Baseline (Cosine Flat):** build 0.285s · latency 0.5643s · size 152.59 MB
 
 **nbits sweep**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 256 | 0.3140 | 0.10 | 0.0120 | 46.8× | 3.55 |
-| 512 | 0.4873 | 0.15 | 0.0176 | 31.9× | 7.11 |
-| 1024 | 0.6133 | 0.45 | 0.0499 | 11.2× | 14.22 |
-| 2048 | 0.6993 | 1.00 | 0.0936 | 6.0× | 28.43 |
-| 4096 | 0.7913 | 5.87 | 0.1904 | 2.9× | 56.86 |
+| 256 | 0.3140 | 0.13 | 0.0151 | 37.3× | 3.55 |
+| 512 | 0.4873 | 0.12 | 0.0296 | 19.1× | 7.11 |
+| 1024 | 0.6133 | 0.34 | 0.0505 | 11.2× | 14.22 |
+| 2048 | 0.6993 | 0.80 | 0.1063 | 5.3× | 28.43 |
+| 4096 | 0.7913 | 6.87 | 0.1794 | 3.1× | 56.86 |
 
 ---
 
 ## PQ
 
-### `run_pq_l2_random()` — random data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.043s · latency 0.5076s · size 146.48 MB
-
-**nbits sweep — m=32**
-
-| nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 6 | 0.0660 | 2.39 | 0.1804 | 2.8× | 2.38 |
-| 8 | 0.1040 | 32.35 | 0.0350 | 14.5× | 3.43 |
-| 10 | 0.1780 | 204.26 | 0.2688 | 1.9× | 5.31 |
-
-**m sweep — nbits=10**
-
-| m | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 8 | 0.0210 | 62.62 | 0.0570 | 8.9× | 2.45 |
-| 16 | 0.0490 | 146.89 | 0.1307 | 3.9× | 3.41 |
-| 32 | 0.1780 | 204.26 | 0.2688 | 1.9× | 5.31 |
-| 64 | 0.3490 | 39.73 | 0.4643 | 1.1× | 9.13 |
-| 192 | 0.8530 | 52.16 | 1.5162 | 0.3× | 24.39 |
-
 ### `run_pq_cosine_random()` — random data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.062s · latency 0.3741s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.048s · latency 0.3419s · size 146.48 MB
 
 **nbits sweep — m=32**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 6 | 0.0620 | 2.09 | 0.1743 | 2.1× | 2.38 |
-| 8 | 0.1050 | 30.47 | 0.0378 | 9.9× | 3.43 |
-| 10 | 0.1970 | 202.65 | 0.2312 | 1.6× | 5.31 |
+| 6 | 0.0650 | 2.25 | 0.1674 | 2.0× | 2.38 |
+| 8 | 0.1060 | 30.56 | 0.0351 | 9.7× | 3.43 |
+| 10 | 0.1750 | 202.48 | 0.2236 | 1.5× | 5.31 |
 
 **m sweep — nbits=10**
 
 | m | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.0210 | 60.96 | 0.0417 | 9.0× | 2.45 |
-| 16 | 0.0550 | 142.35 | 0.1319 | 2.8× | 3.41 |
-| 32 | 0.1970 | 202.65 | 0.2312 | 1.6× | 5.31 |
-| 64 | 0.4520 | 38.75 | 0.5494 | 0.7× | 9.13 |
-| 192 | 0.9010 | 57.52 | 1.6617 | 0.2× | 24.39 |
-
-### `run_pq_l2_clustered()` — clustered+correlated data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.039s · latency 0.4420s · size 146.48 MB
-
-**nbits sweep — m=32**
-
-| nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 6 | 0.0580 | 2.05 | 0.2116 | 2.1× | 2.38 |
-| 8 | 0.1050 | 30.85 | 0.0432 | 10.2× | 3.43 |
-| 10 | 0.1490 | 203.01 | 0.2515 | 1.8× | 5.31 |
-
-**m sweep — nbits=10**
-
-| m | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 8 | 0.0390 | 61.30 | 0.0419 | 10.6× | 2.45 |
-| 16 | 0.0940 | 144.08 | 0.1266 | 3.5× | 3.41 |
-| 32 | 0.1490 | 203.01 | 0.2515 | 1.8× | 5.31 |
-| 64 | 0.3740 | 38.91 | 0.4690 | 0.9× | 9.13 |
-| 192 | 0.8530 | 50.72 | 1.4372 | 0.3× | 24.39 |
+| 8 | 0.0210 | 64.73 | 0.0534 | 6.4× | 2.45 |
+| 16 | 0.0500 | 148.75 | 0.1082 | 3.2× | 3.41 |
+| 32 | 0.1750 | 202.48 | 0.2236 | 1.5× | 5.31 |
+| 64 | 0.3470 | 38.06 | 0.4581 | 0.7× | 9.13 |
+| 192 | 0.8530 | 50.81 | 1.4609 | 0.2× | 24.39 |
 
 ### `run_pq_cosine_clustered()` — clustered+correlated data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.062s · latency 0.3576s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.069s · latency 0.3481s · size 146.48 MB
 
 **nbits sweep — m=32**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 6 | 0.0020 | 2.28 | 0.1659 | 2.2× | 2.38 |
-| 8 | 0.0070 | 30.62 | 0.0326 | 11.0× | 3.43 |
-| 10 | 0.0110 | 203.16 | 0.2275 | 1.6× | 5.31 |
+| 6 | 0.0560 | 2.33 | 0.1619 | 2.2× | 2.38 |
+| 8 | 0.0930 | 30.85 | 0.0345 | 10.1× | 3.43 |
+| 10 | 0.1610 | 202.72 | 0.2324 | 1.5× | 5.31 |
 
 **m sweep — nbits=10**
 
 | m | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.0060 | 61.26 | 0.0641 | 5.6× | 2.45 |
-| 16 | 0.0060 | 147.69 | 0.1127 | 3.2× | 3.41 |
-| 32 | 0.0110 | 203.16 | 0.2275 | 1.6× | 5.31 |
-| 64 | 0.0230 | 41.08 | 0.4635 | 0.8× | 9.13 |
-| 192 | 0.4910 | 53.89 | 1.6540 | 0.2× | 24.39 |
+| 8 | 0.0460 | 58.65 | 0.0498 | 7.0× | 2.45 |
+| 16 | 0.0790 | 154.63 | 0.1645 | 2.1× | 3.41 |
+| 32 | 0.1610 | 202.72 | 0.2324 | 1.5× | 5.31 |
+| 64 | 0.3650 | 43.34 | 0.5149 | 0.7× | 9.13 |
+| 192 | 0.8510 | 59.29 | 1.5949 | 0.2× | 24.39 |
 
 ### `run_pq_cosine_finance()` — FinanceBench, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.418s · latency 0.6377s · size 152.59 MB
+**Baseline (Cosine Flat):** build 0.048s · latency 0.5495s · size 152.59 MB
 
 **nbits sweep — m=32**
 
 | nbits | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 6 | 0.3433 | 2.88 | 0.3734 | 1.7× | 2.48 |
-| 8 | 0.4573 | 31.97 | 0.0637 | 10.0× | 3.55 |
-| 10 | 0.5187 | 213.94 | 0.3663 | 1.7× | 5.47 |
+| 6 | 0.3847 | 2.12 | 0.2660 | 2.1× | 2.48 |
+| 8 | 0.4893 | 31.04 | 0.0638 | 8.6× | 3.55 |
+| 10 | 0.5533 | 216.60 | 0.4236 | 1.3× | 5.47 |
 
 **m sweep — nbits=10**
 
 | m | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.2207 | 65.22 | 0.0642 | 9.9× | 2.49 |
-| 16 | 0.3313 | 148.66 | 0.2317 | 2.8× | 3.49 |
-| 32 | 0.5187 | 213.94 | 0.3663 | 1.7× | 5.47 |
-| 64 | 0.7267 | 42.15 | 0.7053 | 0.9× | 9.45 |
-| 192 | 0.9553 | 54.26 | 2.2510 | 0.3× | 25.34 |
+| 8 | 0.2360 | 66.30 | 0.1232 | 4.5× | 2.49 |
+| 16 | 0.3840 | 155.19 | 0.2191 | 2.5× | 3.49 |
+| 32 | 0.5533 | 216.60 | 0.4236 | 1.3× | 5.47 |
+| 64 | 0.7553 | 55.52 | 0.9969 | 0.6× | 9.45 |
+| 192 | 0.9567 | 75.68 | 3.2271 | 0.2× | 25.34 |
 
 ---
 
 ## HNSW
 
-### `run_hnsw_l2_random()` — random data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.033s · latency 0.4196s · size 146.48 MB
-
-**efSearch sweep — M=32 (one index, reused)**
-
-| efSearch | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 16 | 0.0380 | 32.65 | 0.0133 | 31.6× | 172.44 |
-| 32 | 0.0810 | 32.65 † | 0.0181 | 23.2× | 172.44 |
-| 64 | 0.1320 | 32.65 † | 0.0295 | 14.2× | 172.44 |
-| 128 | 0.2400 | 32.65 † | 0.0560 | 7.5× | 172.44 |
-| 256 | 0.3960 | 32.65 † | 0.1708 | 2.5× | 172.44 |
-
-**M sweep — efSearch=64**
-
-| M | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 8 | 0.0280 | 10.85 | 0.0101 | 41.6× | 154.17 |
-| 16 | 0.0680 | 19.35 | 0.0180 | 23.3× | 160.25 |
-| 32 | 0.1320 | 32.65 † | 0.0295 | 14.2× | 172.44 |
-| 64 | 0.1890 | 34.72 | 0.0603 | 7.0× | 196.85 |
-
-† shared M=32 index — efSearch changes at search time, no rebuild.
-
 ### `run_hnsw_cosine_random()` — random data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.076s · latency 0.4139s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.054s · latency 0.3799s · size 146.48 MB
 
 **efSearch sweep — M=32 (one index, reused)**
 
 | efSearch | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 16 | 0.0420 | 24.72 | 0.0148 | 27.9× | 172.44 |
-| 32 | 0.0760 | 24.72 † | 0.0238 | 17.4× | 172.44 |
-| 64 | 0.1450 | 24.72 † | 0.0290 | 14.3× | 172.44 |
-| 128 | 0.2410 | 24.72 † | 0.0615 | 6.7× | 172.44 |
-| 256 | 0.3910 | 24.72 † | 0.1629 | 2.5× | 172.44 |
+| 16 | 0.0420 | 25.68 | 0.0095 | 40.0× | 172.44 |
+| 32 | 0.0770 | 25.68 † | 0.0144 | 26.4× | 172.44 |
+| 64 | 0.1620 | 25.68 † | 0.0405 | 9.4× | 172.44 |
+| 128 | 0.2590 | 25.68 † | 0.0596 | 6.4× | 172.44 |
+| 256 | 0.4030 | 25.68 † | 0.1222 | 3.1× | 172.44 |
 
 **M sweep — efSearch=64**
 
 | M | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.0300 | 7.72 | 0.0079 | 52.2× | 154.17 |
-| 16 | 0.0700 | 13.41 | 0.0175 | 23.7× | 160.25 |
-| 32 | 0.1450 | 24.72 † | 0.0290 | 14.3× | 172.44 |
-| 64 | 0.2140 | 30.94 | 0.0753 | 5.5× | 196.85 |
-
-† shared M=32 index — efSearch changes at search time, no rebuild.
-
-### `run_hnsw_l2_clustered()` — clustered+correlated data, L2 ground truth, k=10
-
-**Baseline (Flat):** build 0.094s · latency 0.4457s · size 146.48 MB
-
-**efSearch sweep — M=32 (one index, reused)**
-
-| efSearch | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 16 | 0.5290 | 19.76 | 0.0095 | 46.8× | 172.44 |
-| 32 | 0.6640 | 19.76 † | 0.0109 | 40.9× | 172.44 |
-| 64 | 0.8150 | 19.76 † | 0.0183 | 24.3× | 172.44 |
-| 128 | 0.9290 | 19.76 † | 0.0326 | 13.7× | 172.44 |
-| 256 | 0.9770 | 19.76 † | 0.0561 | 7.9× | 172.44 |
-
-**M sweep — efSearch=64**
-
-| M | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
-|---|---|---|---|---|---|
-| 8 | 0.4880 | 4.74 | 0.0059 | 75.1× | 154.17 |
-| 16 | 0.6570 | 8.08 | 0.0110 | 40.6× | 160.25 |
-| 32 | 0.8150 | 19.76 † | 0.0183 | 24.3× | 172.44 |
-| 64 | 0.8990 | 25.27 | 0.0313 | 14.2× | 196.85 |
+| 8 | 0.0300 | 7.91 | 0.0092 | 41.4× | 154.17 |
+| 16 | 0.0660 | 14.17 | 0.0213 | 17.8× | 160.25 |
+| 32 | 0.1620 | 25.68 † | 0.0405 | 9.4× | 172.44 |
+| 64 | 0.1970 | 34.72 | 0.0589 | 6.5× | 196.85 |
 
 † shared M=32 index — efSearch changes at search time, no rebuild.
 
 ### `run_hnsw_cosine_clustered()` — clustered+correlated data, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.142s · latency 0.4124s · size 146.48 MB
+**Baseline (Cosine Flat):** build 0.072s · latency 0.4324s · size 146.48 MB
 
 **efSearch sweep — M=32 (one index, reused)**
 
 | efSearch | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 16 | 0.5090 | 20.13 | 0.0216 | 19.1× | 172.44 |
-| 32 | 0.6730 | 20.13 † | 0.0160 | 25.7× | 172.44 |
-| 64 | 0.8200 | 20.13 † | 0.0225 | 18.3× | 172.44 |
-| 128 | 0.9200 | 20.13 † | 0.0361 | 11.4× | 172.44 |
-| 256 | 0.9820 | 20.13 † | 0.0852 | 4.8× | 172.44 |
+| 16 | 0.5150 | 19.35 | 0.0126 | 34.2× | 172.44 |
+| 32 | 0.6710 | 19.35 † | 0.0120 | 36.1× | 172.44 |
+| 64 | 0.8180 | 19.35 † | 0.0299 | 14.5× | 172.44 |
+| 128 | 0.9130 | 19.35 † | 0.0333 | 13.0× | 172.44 |
+| 256 | 0.9810 | 19.35 † | 0.1330 | 3.3× | 172.44 |
 
 **M sweep — efSearch=64**
 
 | M | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.4790 | 5.15 | 0.0101 | 40.6× | 154.17 |
-| 16 | 0.6480 | 8.71 | 0.0149 | 27.6× | 160.25 |
-| 32 | 0.8200 | 20.13 † | 0.0225 | 18.3× | 172.44 |
-| 64 | 0.8850 | 33.11 | 0.0716 | 5.8× | 196.85 |
+| 8 | 0.4550 | 5.55 | 0.0073 | 59.3× | 154.17 |
+| 16 | 0.6340 | 8.59 | 0.0140 | 30.9× | 160.25 |
+| 32 | 0.8180 | 19.35 † | 0.0299 | 14.5× | 172.44 |
+| 64 | 0.8950 | 28.74 | 0.0315 | 13.7× | 196.85 |
 
 † shared M=32 index — efSearch changes at search time, no rebuild.
 
 ### `run_hnsw_cosine_finance()` — FinanceBench, cosine ground truth, k=10
 
-**Baseline (Cosine Flat):** build 0.050s · latency 0.6062s · size 152.59 MB
+**Baseline (Cosine Flat):** build 0.144s · latency 0.7291s · size 152.59 MB
 
 **efSearch sweep — M=32 (one index, reused)**
 
 | efSearch | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 16 | 0.7747 | 8.13 | 0.0071 | 85.0× | 179.64 |
-| 32 | 0.8953 | 8.13 † | 0.0087 | 69.6× | 179.64 |
-| 64 | 0.9313 | 8.13 † | 0.0109 | 55.5× | 179.64 |
-| 128 | 0.9853 | 8.13 † | 0.0234 | 25.9× | 179.64 |
-| 256 | 0.9887 | 8.13 † | 0.0406 | 14.9× | 179.64 |
+| 16 | 0.7880 | 10.92 | 0.0048 | 150.5× | 179.64 |
+| 32 | 0.9060 | 10.92 † | 0.0064 | 114.4× | 179.64 |
+| 64 | 0.9373 | 10.92 † | 0.0108 | 67.6× | 179.64 |
+| 128 | 0.9807 | 10.92 † | 0.0385 | 19.0× | 179.64 |
+| 256 | 0.9900 | 10.92 † | 0.0603 | 12.1× | 179.64 |
 
 **M sweep — efSearch=64**
 
 | M | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
 |---|---|---|---|---|---|
-| 8 | 0.8153 | 3.80 | 0.0079 | 76.5× | 160.60 |
-| 16 | 0.8993 | 4.66 | 0.0064 | 95.4× | 166.93 |
-| 32 | 0.9313 | 8.13 † | 0.0109 | 55.5× | 179.64 |
-| 64 | 0.9673 | 10.49 | 0.0175 | 34.7× | 205.06 |
+| 8 | 0.8080 | 5.24 | 0.0067 | 108.4× | 160.60 |
+| 16 | 0.8867 | 6.16 | 0.0098 | 74.7× | 166.93 |
+| 32 | 0.9373 | 10.92 † | 0.0108 | 67.6× | 179.64 |
+| 64 | 0.9640 | 14.64 | 0.0281 | 26.0× | 205.06 |
 
 † shared M=32 index — efSearch changes at search time, no rebuild.
 
 ---
 
-# Observations and conclusions — d = 384
+# Observations and conclusions — d = 384, cosine
 
-Format: **claim** — evidence from the tables — *why* (theory).
+Format: **claim**: evidence from the tables → *why* (theory).
+EDA numbers come from `eda.py` (random and clustered). FinanceBench EDA is still pending.
 
-## 0. Validity checks
+## 0. Setup and validity checks
 
-- **Every index size matches its formula** (codes + codebook for PQ, codes + rotation for LSH, vectors + links for HNSW) — 0 mismatches across 100 rows. The data, dimension and indexes are wired correctly.
-- **Recall and index size are deterministic; latency is not.** A few timings wobble between near-identical runs (e.g. HNSW clustered M=64: 0.031s under L2 vs 0.072s under cosine). All speed comparisons use speedup vs Flat from the same run, which also cancels the effect of database size and query count (FinanceBench Flat is slower, at 0.56–0.64s vs 0.36–0.51s, because it has 104k vectors and 150 queries).
+- **One metric everywhere.** Every run uses the same cosine ground truth, so each recall number is comparable across methods and datasets.
+  - Normalising is simply what cosine means, and it is applied to every dataset.
+  - FinanceBench embeddings already come out unit length from all-MiniLM-L6-v2.
+- **Every index size matches its formula** (codes + codebook for PQ, codes + rotation for LSH, vectors + links for HNSW): 0 mismatches across 60 rows.
+- **Recall and index size are deterministic, except for HNSW recall; latency is noisy.**
+  - Flat latency ranges from 0.34s to 0.73s between runs on identical data. So every speed comparison uses speedup against the Flat baseline from the same run.
+  - LSH and PQ recall reproduce exactly between runs.
+  - HNSW recall moves by about ±0.01 between runs (FinanceBench M=8: 0.815 → 0.808). *FAISS inserts nodes in parallel, so the graph differs slightly each time.*
 
 ## 1. LSH
 
-- **Recall rises steadily with every doubling of bits** — random: 0.021 → 0.098 → 0.193 → 0.321 → 0.472; FinanceBench: 0.314 → 0.487 → 0.613 → 0.699 → 0.791. *Each bit is one random hyperplane, and two vectors at angle θ share a bit with probability 1 − θ/π. Hamming distance is therefore a noisy estimate of the angle whose variance falls as 1/nbits — more bits, sharper estimate.*
-- **Cost grows linearly with bits** — size doubles per doubling (3.43 → 54.83 MB); latency grows 16× from 256 to 4096 bits (random: 0.0077 → 0.125s).
-- **Cheapest build of all three methods** — 0.08–11s, with no training step. *Hyperplanes are drawn at random, independent of the data.*
-- **Never exceeds Flat's size at d=384** — 4096 bits is 2.7× smaller than Flat (54.8 vs 146.5 MB). *Raw vectors cost 384 × 32 = 12,288 bits each, so compression ratios depend on d; at d=64 the same 4096-bit index was larger than Flat.*
-- **Weak on high-dimensional synthetic data** — best 0.472 (random), 0.166 (clustered). *In 384-D, cosine between random vectors has spread ≈ 1/√384 ≈ 0.05, so neighbours are barely closer in angle than everything else and random hyperplanes rarely separate them.*
-- **L2 and cosine give identical recall on random data** at all five bit counts. *The data is unit-norm, and a hash bit (the sign of x·r) is unchanged by scaling x — so both the ground truth and the hashes coincide.*
+- **Recall rises steadily with every doubling of bits:**
+  - random: 0.021 → 0.098 → 0.193 → 0.321 → 0.472;
+  - FinanceBench: 0.314 → 0.487 → 0.613 → 0.699 → 0.791.
+  - *Each bit is one random hyperplane, and two vectors at angle θ share a bit with probability 1 − θ/π. Hamming distance is therefore a noisy estimate of the angle, and the noise shrinks as bits are added.*
+- **Cost grows linearly with bits.** Size doubles with each doubling (3.43 → 54.83 MB), and latency grows about 12–14× from 256 to 4096 bits (clustered 0.0079 → 0.107s).
+- **Cheapest build of all three methods:** 0.1–6.9s, with no training. *The hyperplanes are random and don't depend on the data.*
+- **Never larger than Flat at d=384.** 4096 bits is 2.7× smaller than Flat (54.8 vs 146.5 MB). *A raw vector takes 384 × 32 = 12,288 bits.*
+- **Weak on synthetic data:** best 0.472 on random and 0.166 on clustered, against 0.791 on FinanceBench. §5 gives the reason.
 
 ## 2. PQ
 
-- **Recall is governed by dimensions per subspace (d/m)** — random L2 at nbits=10: d/m = 48 → 24 → 12 → 6 → 2 gives 0.021 → 0.049 → 0.178 → 0.349 → 0.853. *Quantisation distortion grows with subspace dimension for a fixed number of centroids (∝ k^(−2/dsub)); 1,024 centroids cover 2 dims densely but 48 dims very sparsely.*
-- **`nbits` matters much less than `m`** — at m=32, going from 64 to 1,024 centroids (nbits 6 → 10) only moves random L2 recall 0.066 → 0.178. *With 12 dims per subspace, even 1,024 centroids are sparse; splitting into more subspaces helps far more than adding centroids.*
-- **Largest compression of any method** — 6–62× smaller than Flat (2.4–25.3 MB vs 146–153 MB). *Each vector is stored as m small integers instead of 384 floats.*
-- **`nbits=8` is the fastest PQ setting on every dataset** — ~10–15× faster than Flat (random 14.5×, clustered 10.2×, FinanceBench 10.0×), against ~2× at 6 and 10 bits. *8-bit codes are exactly one byte, so lookups are byte-aligned; 6- and 10-bit codes must be unpacked from shared bytes.*
-- **At high recall PQ is slower than exact search** — m=192 runs at 0.2–0.3× Flat's speed on all datasets. *Plain PQ still scans every code (O(n)), with m random-access table lookups per vector, while Flat uses vectorised matrix multiplication. This motivates IVF (§8).*
-- **Build time is the largest of the three methods and grows steeply with nbits** — m=32: 2s → 31s → 204s for nbits 6 → 8 → 10. *k-means cost scales with the number of centroids, 2^nbits.*
-- **Build time is not monotonic in m** — 62 / 147 / 204 / 40 / 52s for m = 8 / 16 / 32 / 64 / 192, reproduced within a few seconds under both metrics. Reported as observed; likely an implementation effect, not explained by theory.
-- **PQ needs enough training data** — FAISS warns below ~39 training points per centroid (≈ 40,000 for nbits=10). The first FinanceBench corpus (1,198 cited passages) could only support nbits ≤ 4, which is why full filings were used. *A cost of data dependence that LSH and HNSW do not share.*
+- **Recall is governed by dimensions per subspace (d/m).** With nbits=10, d/m = 48 → 24 → 12 → 6 → 2 gives:
+  - random: 0.021 → 0.050 → 0.175 → 0.347 → 0.853;
+  - FinanceBench: 0.236 → 0.384 → 0.553 → 0.755 → 0.957.
+  - *For a fixed number of centroids, quantisation distortion grows with subspace dimension (∝ k^(−2/dsub)). 1,024 centroids cover 2 dimensions densely but 48 dimensions very sparsely.*
+- **`nbits` matters much less than `m`.** At m=32, going from 64 to 1,024 centroids (nbits 6 → 10) moves random recall only from 0.065 to 0.175. Going from m=32 to m=192 at the same nbits moves it from 0.175 to 0.853.
+- **Largest compression of any method:** 6–62× smaller than Flat (2.4–25.3 MB). *Each vector is stored as m small integers instead of 384 floats.*
+- **`nbits=8` is the fastest PQ setting on every dataset:** 8.6–10.1× faster than Flat, against about 2× at 6 bits and 1.3–1.5× at 10 bits. *8-bit codes are exactly one byte, so lookups are byte-aligned. 6- and 10-bit codes have to be unpacked from shared bytes.*
+- **At high recall PQ is slower than exact search.** m=192 runs at 0.17–0.23× Flat's speed on every dataset. *Plain PQ still scans every code (O(n)), doing m table lookups per vector, while Flat uses vectorised matrix multiplication. This is what motivates IVF (§7).*
+- **Most expensive build, growing steeply with nbits.** At m=32 it takes 2.3s → 30.6s → 202.5s for nbits 6 → 8 → 10. *k-means cost scales with the number of centroids, 2^nbits.*
+- **Build time does not increase steadily with m.** Random takes 65 / 149 / 202 / 38 / 51s for m = 8 / 16 / 32 / 64 / 192, and the same pattern appears on all three datasets. This is reported as observed; it is likely an implementation effect.
+- **PQ needs enough training data.** FAISS warns below about 39 training points per centroid (about 40,000 for nbits=10). The first FinanceBench corpus (1,198 cited passages) could only support nbits ≤ 4, which is why full filings were used. *LSH and HNSW don't have this dependence on data.*
+- **Scoring choice: L2 on the normalised vectors, not inner product.** Both rank identically on exact unit vectors, but not on PQ's compressed ones.
+
+  | recall@10, m=192 / m=64 (nbits=10) | inner product | L2 (used) |
+  |---|---|---|
+  | random | **0.901** / **0.452** | 0.853 / 0.347 |
+  | clustered | 0.491 / 0.023 | **0.851** / **0.365** |
+  | FinanceBench | 0.955 / 0.727 | **0.957** / **0.755** |
+
+  - L2 is at least as good at all 7 configs on clustered data (up to +0.36) and on FinanceBench (up to +0.05). Inner product is better only on random data (up to +0.10).
+  - *Why:* compression makes a vector's length drift by a small δ.
+    - Inner product scores cos·(1+δ), so its error grows with cos.
+    - L2 scores 2 − 2cos + 2δ(1 − cos), so its error grows with 1 − cos.
+    - Inner product is therefore more robust when the true neighbours have cos < 0.5, and L2 when cos > 0.5.
+    - Random data's neighbours sit at cos ≈ 0.2, so inner product wins there. Clustered data's sit at cos ≈ 0.98, so inner product's error is about 50× larger and recall collapses.
+  - L2 was chosen because it is PQ's native metric and never collapses.
 
 ## 3. HNSW
 
-- **`efSearch` tunes accuracy at search time, with no rebuild** — one FinanceBench index spans 0.775 → 0.989 recall as efSearch goes 16 → 256. *efSearch is the size of the candidate list kept during the greedy graph walk; neither PQ nor LSH can change accuracy without rebuilding.*
-- **Diminishing returns in efSearch** — FinanceBench 128 → 256 gains only +0.003 recall for 1.7× the latency; clustered gains +0.048.
-- **`M` trades memory for recall** — FinanceBench at efSearch=64: M = 8 / 16 / 32 / 64 gives 0.815 / 0.899 / 0.931 / 0.967.
-- **Always larger than Flat** — 5% (M=8) to 34% (M=64) over Flat. The overhead is 81 / 144 / 272 / 528 bytes per vector, ≈ 2·M·4 bytes. *HNSW stores the raw vectors plus M neighbour IDs per node (2M at the base layer); the overhead is independent of d, identical to the d=64 runs.*
-- **Fastest method at high recall** — FinanceBench 0.985 recall at 25.9× faster than Flat; clustered 0.977 at 7.9×. *The greedy walk visits only a small fraction of the database.*
-- **Worst on random data** — best 0.396, and still climbing (+0.156 from efSearch 128 → 256), so not yet saturated. *Isotropic 384-D Gaussian data has no local structure: all points are nearly equidistant, so the greedy walk has no gradient to follow.*
-- **Builds faster on easier data** — M=32: FinanceBench 8.1s, clustered 19.8s, random 32.6s. *Graph construction is itself a series of searches, so data that is easy to search is also quick to index.*
+- **`efSearch` tunes accuracy at search time, with no rebuild.** One FinanceBench index spans 0.788 → 0.990 recall as efSearch goes 16 → 256. *efSearch is the size of the candidate list kept during the greedy graph walk. Neither PQ nor LSH can change accuracy without a rebuild.*
+- **Diminishing returns in efSearch.** On FinanceBench, going 128 → 256 gains only +0.009 recall for 1.6× the latency.
+- **`M` trades memory for recall.** At efSearch=64:
+  - FinanceBench: M = 8 / 16 / 32 / 64 gives 0.808 / 0.887 / 0.937 / 0.964;
+  - clustered: 0.455 / 0.634 / 0.818 / 0.895.
+- **Always larger than Flat**, by 5% (M=8) to 34% (M=64).
+  - The overhead is 81 / 144 / 272 / 528 bytes per vector, roughly 2·M·4 bytes.
+  - *HNSW stores the raw vectors plus M neighbour IDs per node (2M at the base layer). That overhead doesn't depend on d.*
+- **Fastest method at high recall:**
+  - FinanceBench: 0.981 recall at 19× faster than Flat, and 0.990 at 12×;
+  - clustered: 0.913 at 13×, and 0.981 at 3.3×.
+  - *The greedy walk visits only a small fraction of the database.*
+- **Worst on random data:** best 0.403, and still climbing (+0.144 from efSearch 128 → 256), so not yet saturated. *See §5: random data gives the walk nothing to follow.*
+- **Builds faster on easier data.** At M=32: FinanceBench 10.9s, clustered 19.3s, random 25.7s. *Building the graph is itself a series of searches, so data that is easy to search is also quick to index.*
 
 ## 4. Method comparison
 
@@ -367,51 +280,65 @@ Format: **claim** — evidence from the tables — *why* (theory).
 
   | | memory | search speed at high recall | build / training |
   |---|---|---|---|
-  | LSH | medium (3.4–57 MB) | fast, but low recall | **cheapest (≤ 11s, no training)** |
-  | PQ | **smallest (2.4–25 MB)** | slower than Flat | most expensive (up to 214s) |
-  | HNSW | largest (154–205 MB, > Flat) | **fastest (up to 95× Flat)** | moderate (4–35s) |
+  | LSH | medium (3.4–57 MB) | fast, but low recall | **cheapest (≤ 7s, no training)** |
+  | PQ | **smallest (2.4–25 MB)** | slower than Flat | most expensive (up to 217s) |
+  | HNSW | largest (154–205 MB, more than Flat) | **fastest (0.99 recall at 12× Flat)** | moderate (5–35s) |
 
-- **At equal memory, LSH is faster and PQ is more accurate** — both at 32 bytes per vector (LSH 256 bits vs PQ m=32, nbits=8), FinanceBench: recall 0.314 vs 0.457, latency 0.012s vs 0.064s. *Hamming distance is a few XOR + popcount instructions per vector; PQ does m table lookups and additions but reconstructs a much better distance estimate.*
-- **Only HNSW reaches high recall while staying faster than Flat** — ≥ 0.95 recall: HNSW yes (25.9× on FinanceBench); PQ reaches 0.955 only at m=192, 0.3× Flat's speed; LSH never reaches it (best 0.791).
-- **PQ improves on LSH per bit because its codes are learned from the data**; HNSW sidesteps compression and instead avoids comparing against most of the database. The ordering LSH → PQ → HNSW follows both the history of the methods and the weakness each one addresses.
+- **At equal memory, LSH is faster and PQ is more accurate.** Both use 32 bytes per vector (LSH 256 bits vs PQ m=32, nbits=8). On FinanceBench: recall 0.314 vs 0.489, latency 0.015s vs 0.064s. *Hamming distance takes a few XOR + popcount instructions per vector; PQ does m table lookups but reconstructs a much better distance estimate.*
+- **Only HNSW reaches high recall while staying faster than Flat.**
+  - HNSW reaches ≥ 0.95 at 12–19× Flat's speed on FinanceBench.
+  - PQ reaches 0.957 only at m=192, running at 0.17× Flat's speed.
+  - LSH never gets there (best 0.791).
+- **The order LSH → PQ → HNSW follows each method's weakness.**
+  - PQ improves on LSH per bit because its codes are learned from the data.
+  - HNSW avoids compression altogether and instead avoids comparing the query against most of the database.
 
-## 5. Effect of distance metric (L2 vs cosine)
+## 5. Effect of data
 
-- **On unit-norm data the two metrics are equivalent** — random: LSH identical at all 5 configs, HNSW within ±0.025. *For unit vectors ‖x−y‖² = 2 − 2·cos(x, y), so both rank neighbours identically.*
-- **Inner-product PQ is at least as good as L2 PQ on unit-norm data** — random: ≥ in 6 of 7 configs, gains up to +0.103 (m=64) and +0.048 (m=192); the one loss is −0.004 at near-zero recall. *‖q−ŷ‖² = 1 + ‖ŷ‖² − 2q·ŷ: quantised codewords ŷ are not unit length, so the L2 score carries an error term that a cosine ground truth ignores; inner product drops it.*
-- **On non-normalised data, normalising changes the task — and only PQ suffers** — clustered, cosine minus L2: LSH within ±0.012, HNSW within ±0.02, PQ lower at every config, by up to −0.36 (m=192: 0.853 → 0.491; m=64: 0.374 → 0.023).
-- **Ablation: quantisation error is the cause of PQ's drop** — HNSW searches the same normalised vectors without compressing them and loses nothing, so the neighbour structure survives normalisation; what fails is PQ's compressed representation. *Normalising squeezes each cluster into a narrow cone, so the differences between true neighbours become smaller than PQ's quantisation error.*
-- **Takeaway:** use cosine when vector magnitude is noise (text embeddings), and L2 when magnitude carries structure. The choice matters most for compressed methods.
-
-## 6. Effect of data
-
-- **Best recall per dataset (cosine, largest config tested):**
+- **Best recall per dataset (largest config tested):**
 
   | | random | clustered | FinanceBench |
   |---|---|---|---|
   | LSH (4096 bits) | 0.472 | 0.166 | **0.791** |
-  | PQ (m=192, nbits=10) | 0.901 | 0.491 | **0.955** |
-  | HNSW (M=32, efSearch=256) | 0.391 | 0.982 | **0.989** |
+  | PQ (m=192, nbits=10) | 0.853 | 0.851 | **0.957** |
+  | HNSW (M=32, efSearch=256) | 0.403 | 0.981 | **0.990** |
 
-- **All three methods do best on real data** — despite having the same 384 dimensions. *Text embeddings lie near a much lower-dimensional structure (companies, statement types, topics), whereas random Gaussian data genuinely uses all 384 dimensions — the worst case for any ANN method.*
-- **Data structure affects the methods in opposite directions** — going from random to clustered, HNSW rises (0.391 → 0.982) while LSH falls (0.472 → 0.166). *Clusters give the graph local neighbourhoods to navigate, but compress the angular separation that random hyperplanes rely on.*
-- **Under L2, PQ is indifferent to cluster structure** — random and clustered both reach 0.853 at m=192. *A query's true neighbours lie inside its own cluster, which is itself a high-dimensional Gaussian, so the local quantisation problem is the same.*
-- **On random data LSH currently beats HNSW (0.472 vs 0.391)** — tentative, since HNSW had not saturated at efSearch=256. *SimHash's collision probability depends only on angle, whereas graph navigation depends on local structure that random data lacks.*
+- **All three methods do best on real data**, even though every dataset has 384 dimensions. *Text embeddings lie near a much lower-dimensional structure (companies, statement types, topics). Random data genuinely uses all 384 dimensions: 323 of them are needed to keep 90% of the variance (eda4).*
+- **HNSW depends on global contrast.**
+  - On random data the average point is only 1.13× as far away as the nearest one; on clustered data it is 6.1×.
+  - HNSW recall follows: 0.403 vs 0.981.
+  - *Each greedy hop moves to the neighbour closest to the query. When every point is almost equally far away, hops make no progress.*
+- **LSH depends on angle gaps, and clusters shrink them.**
+  - Inside a cluster, the 10th and 1000th neighbours differ by only 1.0°; on random data they differ by 4.1°.
+  - *Each bit agrees with probability 1 − θ/π, so the clustered gap carries about 4× less information per bit.* Taking the noise of each bit into account, clustered data needs about 4–5× more bits to do as well.
+  - The data bears this out: clustered at 4096 bits (0.166) sits between random at 512 bits (0.098) and at 1024 bits (0.193).
+  - So data that is easy to search by distance can still be hard for LSH.
+- **PQ is indifferent to cluster structure:** random 0.853, clustered 0.851 at m=192. *PQ has to rank the neighbours inside the query's own cluster, and that local problem is about as hard in both datasets (distance ratio between the 10th and 100th neighbour: 0.981 vs 0.966).*
+- **On random data LSH currently beats HNSW (0.472 vs 0.403).** This is tentative, because HNSW had not saturated at efSearch=256 and M=64 was only tested at efSearch=64.
 
-## 7. Conclusions — which method when
+## 6. Conclusions: which method when
 
 | situation | choose | because |
 |---|---|---|
 | memory is the binding constraint | **PQ** (nbits=8 for speed) | 6–62× compression |
-| latency-critical, high recall needed | **HNSW** | ≥ 0.95 recall at 5–26× Flat's speed on structured data |
-| data changes constantly / no training data / cheapest possible comparisons | **LSH** | no training, sub-second builds, Hamming distance |
-| data is isotropic and high-dimensional | none performs well | curse of dimensionality — reconsider the representation |
+| latency-critical, high recall needed | **HNSW** | ≥ 0.95 recall at 12–19× Flat's speed on real data |
+| data changes constantly / no training data / cheapest comparisons | **LSH** | no training, builds in seconds, Hamming distance |
+| data is isotropic and high-dimensional | none performs well | curse of dimensionality: reconsider the representation |
 
-## 8. Improvements, limitations, open items
+## 7. Improvements, limitations, open items
 
-- **IVF** — partition the database into cells and probe only a few, making PQ's scan sub-linear; addresses PQ being slower than Flat.
-- **OPQ** — learn a rotation before quantising, so correlated dimensions share a subspace; addresses PQ's sequential slicing.
-- **HNSW + PQ** — store PQ codes in the graph to cut HNSW's memory.
-- **Match the metric to the data** — normalise only when magnitude is noise.
-- **Limitations:** CPU-only laptop timings with run-to-run noise; one embedding model; 150 FinanceBench queries; synthetic data is Gaussian; FAISS `IndexLSH` scans all codes (no hash-bucket lookup), so LSH is measured as compact codes, not bucketed retrieval.
-- **Open item:** extend random-data HNSW to efSearch 512 / 1024 to confirm or overturn the LSH-vs-HNSW result.
+- **Improvements:**
+  - **Implemented:** PQ scoring with L2 instead of inner product (§2). Recall rose by up to +0.36 on clustered data and +0.05 on FinanceBench.
+  - **IVF (discussed):** partition the database into cells and probe only a few, making PQ's scan sub-linear. This addresses PQ being slower than Flat.
+  - **OPQ (discussed):** learn a rotation before quantising, so correlated dimensions share a subspace.
+  - **HNSW + PQ (discussed):** store PQ codes in the graph to cut HNSW's memory.
+- **Limitations:**
+  - CPU-only laptop timings, with run-to-run noise.
+  - One embedding model, and 150 FinanceBench queries.
+  - The synthetic data is Gaussian.
+  - Cosine discards vector length, which carries information in the raw clustered data (top-10 overlap between L2 and cosine on the raw vectors is 0.80). Conclusions may not transfer to tasks where vector length matters.
+  - FAISS `IndexLSH` scans every code (no hash-bucket lookup), so LSH is measured as compact codes rather than bucketed retrieval.
+  - Parameters were swept one at a time around M=32 / efSearch=64 and m=32 / nbits=10, not as a full grid.
+- **Open items:**
+  - A full parameter grid, especially HNSW M × efSearch on random data, to settle LSH vs HNSW.
+  - FinanceBench EDA: check that its neighbour similarity at the top-10 boundary exceeds 0.5, as the PQ scoring result implies.
