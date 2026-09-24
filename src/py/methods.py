@@ -48,7 +48,7 @@ def build_flat_index(xb: np.ndarray, d: int):
 
 
 
-def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
+def build_lsh_index(d: int, nbits: int, xb: np.ndarray, train_thresholds=False):
     """
     Build LSH index: generates nbits random hyperplanes and hashes each
     vector into an nbits-length binary code based on which side of each
@@ -56,11 +56,16 @@ def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
 
     :param d: dimension of vectors
     :param nbits: number of random hash functions (hyperplanes) / bits per code
+    :param train_thresholds: False splits every hyperplane at 0 (standard LSH),
+                             True learns each split point from the data (the median projection)
     :return: empty LSH index, ready for add_vectors
     """
     # print("\n=== Build LSH Index ===")
-    index = faiss.IndexLSH(d, nbits)
+    index = faiss.IndexLSH(d, nbits, True, train_thresholds)
     # print("\nTrained:", index.is_trained)
+
+    if train_thresholds:
+        index.train(xb)  # one median per bit, so each hyperplane splits the data in half
 
     add_vectors(index, xb)
 

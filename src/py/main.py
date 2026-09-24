@@ -322,6 +322,41 @@ def run_hnsw_finance():
 
 
 
+def run_lsh_ablation():
+    """
+    Ablation: lsh with each bit's threshold learned from the data (the median projection)
+    instead of fixed at 0. The standard lsh runs give the other half of the comparison
+    """
+    datasets = {
+        "random": generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D),
+        "clustered": generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D),
+        "financebench": generate_financebench_data()[:2],  # labels not needed
+    }
+
+    for dataset, (xb, xq) in datasets.items():
+        d = xb.shape[1]
+        nq = xq.shape[0]
+
+        print(f"\n========== Flat ({dataset}) ==========")
+
+        flat_index = measure_build_time(build_flat_index, xb=xb, d=d)
+        _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=nq, xq=xq)
+        flat_latency = measure_latency(flat_index, xq, k=10)
+        flat_size = measure_index_size(flat_index)
+        set_baseline(flat_latency, flat_size)
+
+        print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+        for nbits in [256, 512, 1024, 2048, 4096]:
+
+            print(f"\n========== LSH-trained {nbits} bits ({dataset}) ==========")
+
+            lsh_index = measure_build_time(build_lsh_index, d=d, nbits=nbits, xb=xb, train_thresholds=True)
+            _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=nq, xq=xq)
+            get_metrics(pred_ids, gt_ids, lsh_index, xq, k=10, dataset=dataset, method="LSH-trained", nbits=nbits)
+
+
+
 def run_all_synthetic():
     # every dataset arrives unit length, and every method uses l2 for ground truth and search
     run_lsh_random()
@@ -346,6 +381,7 @@ def run_all_finance():
 def main():
     run_all_synthetic()
     run_all_finance()
+    run_lsh_ablation()
     save_results(RESULTS_PATH)
 
 
