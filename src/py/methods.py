@@ -68,7 +68,7 @@ def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
 
 
 
-def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray, metric=faiss.METRIC_L2):
+def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray):
     """
     Build compressed vector for Product Quantization: splits each vector into m
     subspaces, learns nbits-worth of centroids per subspace via k-means,
@@ -78,10 +78,9 @@ def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray, metric=faiss.METR
     :param m: number of subspaces
     :param nbits: bits per subquantizer code
     :param xb: vector db
-    :param metric: faiss.METRIC_L2 or faiss.METRIC_INNER_PRODUCT
     :return: trained, empty PQ index
     """
-    index = faiss.IndexPQ(d, m, nbits, metric)  # build index
+    index = faiss.IndexPQ(d, m, nbits)  # build index, l2 by default
     index.train(xb) # k-means performed, create codebook
 
     add_vectors(index, xb)
@@ -90,53 +89,7 @@ def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray, metric=faiss.METR
 
 
 
-def build_opq_index(d: int, m: int, nbits: int, xb: np.ndarray):
-    """
-    Build compressed vector index using Optimized Product Quantization: learns
-    a rotation to optimize the vector space, splits each vector into m subspaces,
-    learns 2^nbits centroids per subspace via k-means, and stores compressed
-    centroid-ID codes instead of full vectors.
-
-    :param d: dimension of vectors
-    :param m: number of subspaces
-    :param nbits: bits per subquantizer code
-    :param xb: vector db
-    :return: trained, empty PQ index
-    """
-    # print("\n=== Build OPQ Index ===")
-    index = faiss.index_factory(d, f"OPQ{d},PQ{m}x{nbits}", faiss.METRIC_L2)
-    index.train(xb)
-    # print("\nTrained:", index.is_trained)
-
-    add_vectors(index, xb)
-
-    return index
-
-
-
-
-def build_flat_index_cosine(xb: np.ndarray, xq: np.ndarray, d: int, k=10):
-    """
-    Build FAISS flat index for vector search using cosine similarity
-
-    :param xb: index numpy array
-    :param xq: query vector numpy array
-    :return: cosine_index normalized cosine index, xb_norm normalized vector db, xq_norm normalized vector queries
-    """
-    # print("\n=== Cosine Similarity Index ===")
-    xb_norm = xb.copy()
-    xq_norm = xq.copy()
-    faiss.normalize_L2(xb_norm)
-    faiss.normalize_L2(xq_norm)
-    cosine_index = faiss.IndexFlatIP(d)
-
-    add_vectors(cosine_index, xb_norm)
-
-    return cosine_index, xb_norm, xq_norm
-
-
-
-def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40, metric=faiss.METRIC_L2):
+def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40):
     """
     Build HNSW index: builds a multi-layer proximity graph where each vector
     links to M neighbours per layer, and search greedily traverses the graph
@@ -146,10 +99,9 @@ def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40, metric=f
     :param M: number of graph links per node
     :param xb: vector db
     :param efConstruction: candidate list size during graph construction
-    :param metric: faiss.METRIC_L2 or faiss.METRIC_INNER_PRODUCT
     :return: HNSW index
     """
-    index = faiss.IndexHNSWFlat(d, M, metric)
+    index = faiss.IndexHNSWFlat(d, M)  # l2 by default
     index.hnsw.efConstruction = efConstruction
 
     add_vectors(index, xb)

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import time
@@ -8,6 +9,9 @@ from dataset import generate_random_data
 from methods import *
 
 VERBOSE = False  # set True to see the per-step prints
+
+RESULTS = []  # one dict per configuration, written to csv by save_results
+LAST = {"build": None, "flat_latency": None, "flat_size": None, "flat_build": None}  # latest build time and flat baseline
 
 
 
@@ -145,6 +149,7 @@ def measure_build_time(build_fn, **kwargs):
     end_time = time.perf_counter() # record end time
 
     build_time = end_time - start_time
+    LAST["build"] = build_time  # picked up by get_metrics, so reused indexes keep their build time
 
     print(f"build time: {build_time:.6f} seconds")
 
@@ -152,9 +157,27 @@ def measure_build_time(build_fn, **kwargs):
 
 
 
-def get_metrics(pred_ids: np.ndarray, gt_ids: np.ndarray, index, xq: np.ndarray, k: int, n_repeats=10):
+def set_baseline(latency: float, size: float):
     """
-    Print metrics for search and index performance
+    Remember the flat (exact) baseline of the current run, so every result row
+    can be compared against the flat index built on the same data
+
+    :param latency: flat search latency in seconds
+    :param size: flat index size in MB
+    """
+    LAST["flat_latency"] = latency
+    LAST["flat_size"] = size
+    LAST["flat_build"] = LAST["build"]
+
+
+
+def get_metrics(pred_ids: np.ndarray, gt_ids: np.ndarray, index, xq: np.ndarray, k: int, n_repeats=10, dataset=None, method=None, **params):
+    """
+    Print metrics for search and index performance, and store them as one row of RESULTS
+
+    :param dataset: dataset name, e.g. "random"
+    :param method: method name, e.g. "PQ"
+    :param params: method parameters, e.g. m=32, nbits=8
     """
     recall = recall_at_k(pred_ids, gt_ids, k)
     latency = measure_latency(index, xq, k, n_repeats)
@@ -162,7 +185,32 @@ def get_metrics(pred_ids: np.ndarray, gt_ids: np.ndarray, index, xq: np.ndarray,
 
     print(f"recall@{k}: {recall:.4f} | latency: {latency:.6f}s | index size: {size:.4f}MB\n")
 
+    if dataset is not None:
+        RESULTS.append({"dataset": dataset, "method": method, **params,
+                        "recall": recall, "latency": latency, "size": size, "build": LAST["build"],
+                        "flat_latency": LAST["flat_latency"], "flat_size": LAST["flat_size"], "flat_build": LAST["flat_build"]})
+
     return recall, latency, size
+
+
+
+def save_results(path: str):
+    """
+    Write RESULTS to csv. Rows already in the file for the same dataset and method
+    are replaced, so parts of main can be rerun on their own
+
+    :param path: csv file path
+    """
+    new = pd.DataFrame(RESULTS)
+
+    if os.path.exists(path):
+        old = pd.read_csv(path)
+        rerun = old.set_index(["dataset", "method"]).index.isin(new.set_index(["dataset", "method"]).index)
+        new = pd.concat([old[~rerun], new], ignore_index=True)
+
+    new.to_csv(path, index=False)
+    print(f"saved {len(RESULTS)} results to {path}")
+
 
 
 

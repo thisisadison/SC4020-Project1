@@ -1,444 +1,201 @@
 ========== Flat (random data) ==========
-build time: 0.043294 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.507589s | index size: 146.4844MB
-
+build time: 0.022801 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.450857s | index size: 146.4844MB
+========== LSH 256 bits (random data) ==========
+build time: 0.207105 seconds
+recall@10: 0.0210 | latency: 0.007957s | index size: 3.4268MB
+========== LSH 512 bits (random data) ==========
+build time: 0.142781 seconds
+recall@10: 0.0980 | latency: 0.007958s | index size: 6.8536MB
+========== LSH 1024 bits (random data) ==========
+build time: 0.418021 seconds
+recall@10: 0.1930 | latency: 0.021567s | index size: 13.7071MB
+========== LSH 2048 bits (random data) ==========
+build time: 1.215741 seconds
+recall@10: 0.3210 | latency: 0.045454s | index size: 27.4142MB
+========== LSH 4096 bits (random data) ==========
+build time: 5.876179 seconds
+recall@10: 0.4720 | latency: 0.066043s | index size: 54.8282MB
+========== Flat (clustered data) ==========
+build time: 0.022292 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.353240s | index size: 146.4844MB
+========== LSH 256 bits (clustered data) ==========
+build time: 0.084729 seconds
+recall@10: 0.0090 | latency: 0.007817s | index size: 3.4268MB
+========== LSH 512 bits (clustered data) ==========
+build time: 0.146483 seconds
+recall@10: 0.0240 | latency: 0.008383s | index size: 6.8536MB
+========== LSH 1024 bits (clustered data) ==========
+build time: 0.293915 seconds
+recall@10: 0.0430 | latency: 0.015208s | index size: 13.7071MB
+========== LSH 2048 bits (clustered data) ==========
+build time: 1.086712 seconds
+recall@10: 0.0980 | latency: 0.024791s | index size: 27.4142MB
+========== LSH 4096 bits (clustered data) ==========
+build time: 5.416388 seconds
+recall@10: 0.1660 | latency: 0.115786s | index size: 54.8282MB
+========== Flat (random data) ==========
+build time: 0.022193 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.350582s | index size: 146.4844MB
 ========== PQ m=32, nbits=6 (random data) ==========
-build time: 2.394202 seconds
-recall@10: 0.0660 | latency: 0.180353s | index size: 2.3827MB
-
+build time: 2.319410 seconds
+recall@10: 0.0650 | latency: 0.160999s | index size: 2.3827MB
 ========== PQ m=32, nbits=8 (random data) ==========
-build time: 32.351421 seconds
-recall@10: 0.1040 | latency: 0.034977s | index size: 3.4268MB
-
+build time: 30.475848 seconds
+recall@10: 0.1060 | latency: 0.033070s | index size: 3.4268MB
 ========== PQ m=32, nbits=10 (random data) ==========
-build time: 204.264143 seconds
-recall@10: 0.1780 | latency: 0.268839s | index size: 5.3148MB
-
+build time: 203.090579 seconds
+recall@10: 0.1750 | latency: 0.228683s | index size: 5.3148MB
 ========== PQ m=8, nbits=10 (random data) ==========
-build time: 62.620543 seconds
-recall@10: 0.0210 | latency: 0.057034s | index size: 2.4538MB
-
+build time: 62.133002 seconds
+recall@10: 0.0210 | latency: 0.048030s | index size: 2.4538MB
 ========== PQ m=16, nbits=10 (random data) ==========
-build time: 146.893368 seconds
-recall@10: 0.0490 | latency: 0.130695s | index size: 3.4074MB
-
+build time: 144.986512 seconds
+recall@10: 0.0500 | latency: 0.084549s | index size: 3.4074MB
 ========== PQ m=64, nbits=10 (random data) ==========
-build time: 39.727150 seconds
-recall@10: 0.3490 | latency: 0.464273s | index size: 9.1295MB
-
+build time: 39.835131 seconds
+recall@10: 0.3470 | latency: 0.463351s | index size: 9.1295MB
 ========== PQ m=192, nbits=10 (random data) ==========
-build time: 52.159382 seconds
-recall@10: 0.8530 | latency: 1.516201s | index size: 24.3883MB
-
-========== Cosine Flat (random data) ==========
-build time: 0.062355 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.374133s | index size: 146.4844MB
-
-========== PQ m=32, nbits=6 (random data, cosine ground truth) ==========
-build time: 2.094471 seconds
-recall@10: 0.0620 | latency: 0.174255s | index size: 2.3827MB
-
-========== PQ m=32, nbits=8 (random data, cosine ground truth) ==========
-build time: 30.465948 seconds
-recall@10: 0.1050 | latency: 0.037840s | index size: 3.4268MB
-
-========== PQ m=32, nbits=10 (random data, cosine ground truth) ==========
-build time: 202.650008 seconds
-recall@10: 0.1970 | latency: 0.231213s | index size: 5.3148MB
-
-========== PQ m=8, nbits=10 (random data, cosine ground truth) ==========
-build time: 60.955894 seconds
-recall@10: 0.0210 | latency: 0.041673s | index size: 2.4538MB
-
-========== PQ m=16, nbits=10 (random data, cosine ground truth) ==========
-build time: 142.352432 seconds
-recall@10: 0.0550 | latency: 0.131866s | index size: 3.4074MB
-
-========== PQ m=64, nbits=10 (random data, cosine ground truth) ==========
-build time: 38.748052 seconds
-recall@10: 0.4520 | latency: 0.549398s | index size: 9.1295MB
-
-========== PQ m=192, nbits=10 (random data, cosine ground truth) ==========
-build time: 57.515750 seconds
-recall@10: 0.9010 | latency: 1.661695s | index size: 24.3883MB
-
+build time: 51.889474 seconds
+recall@10: 0.8530 | latency: 1.479670s | index size: 24.3883MB
 ========== Flat (clustered data) ==========
-build time: 0.038890 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.442000s | index size: 146.4844MB
-
+build time: 0.020515 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.368589s | index size: 146.4844MB
 ========== PQ m=32, nbits=6 (clustered data) ==========
-build time: 2.052306 seconds
-recall@10: 0.0580 | latency: 0.211645s | index size: 2.3827MB
-
+build time: 2.291198 seconds
+recall@10: 0.0560 | latency: 0.165007s | index size: 2.3827MB
 ========== PQ m=32, nbits=8 (clustered data) ==========
-build time: 30.854877 seconds
-recall@10: 0.1050 | latency: 0.043163s | index size: 3.4268MB
-
+build time: 30.530696 seconds
+recall@10: 0.0930 | latency: 0.041850s | index size: 3.4268MB
 ========== PQ m=32, nbits=10 (clustered data) ==========
-build time: 203.005240 seconds
-recall@10: 0.1490 | latency: 0.251535s | index size: 5.3148MB
-
+build time: 213.991172 seconds
+recall@10: 0.1610 | latency: 0.253953s | index size: 5.3148MB
 ========== PQ m=8, nbits=10 (clustered data) ==========
-build time: 61.304521 seconds
-recall@10: 0.0390 | latency: 0.041864s | index size: 2.4538MB
-
+build time: 64.344916 seconds
+recall@10: 0.0460 | latency: 0.042582s | index size: 2.4538MB
 ========== PQ m=16, nbits=10 (clustered data) ==========
-build time: 144.081008 seconds
-recall@10: 0.0940 | latency: 0.126573s | index size: 3.4074MB
-
+build time: 170.267781 seconds
+recall@10: 0.0790 | latency: 0.085164s | index size: 3.4074MB
 ========== PQ m=64, nbits=10 (clustered data) ==========
-build time: 38.907744 seconds
-recall@10: 0.3740 | latency: 0.468965s | index size: 9.1295MB
-
+build time: 43.104859 seconds
+recall@10: 0.3650 | latency: 0.486081s | index size: 9.1295MB
 ========== PQ m=192, nbits=10 (clustered data) ==========
-build time: 50.719534 seconds
-recall@10: 0.8530 | latency: 1.437151s | index size: 24.3883MB
-
-========== Cosine Flat (clustered data) ==========
-build time: 0.061701 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.357643s | index size: 146.4844MB
-
-========== PQ m=32, nbits=6 (clustered data, cosine ground truth) ==========
-build time: 2.283284 seconds
-recall@10: 0.0020 | latency: 0.165936s | index size: 2.3827MB
-
-========== PQ m=32, nbits=8 (clustered data, cosine ground truth) ==========
-build time: 30.618658 seconds
-recall@10: 0.0070 | latency: 0.032622s | index size: 3.4268MB
-
-========== PQ m=32, nbits=10 (clustered data, cosine ground truth) ==========
-build time: 203.162309 seconds
-recall@10: 0.0110 | latency: 0.227495s | index size: 5.3148MB
-
-========== PQ m=8, nbits=10 (clustered data, cosine ground truth) ==========
-build time: 61.258521 seconds
-recall@10: 0.0060 | latency: 0.064124s | index size: 2.4538MB
-
-========== PQ m=16, nbits=10 (clustered data, cosine ground truth) ==========
-build time: 147.691015 seconds
-recall@10: 0.0060 | latency: 0.112720s | index size: 3.4074MB
-
-========== PQ m=64, nbits=10 (clustered data, cosine ground truth) ==========
-build time: 41.078596 seconds
-recall@10: 0.0230 | latency: 0.463478s | index size: 9.1295MB
-
-========== PQ m=192, nbits=10 (clustered data, cosine ground truth) ==========
-build time: 53.890773 seconds
-recall@10: 0.4910 | latency: 1.653985s | index size: 24.3883MB
-
+build time: 56.392871 seconds
+recall@10: 0.8510 | latency: 1.570801s | index size: 24.3883MB
 ========== Flat (random data) ==========
-build time: 0.032754 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.395271s | index size: 146.4844MB
-
-========== LSH 256 bits (random data, l2 ground truth) ==========
-build time: 0.107760 seconds
-recall@10: 0.0210 | latency: 0.007686s | index size: 3.4268MB
-
-========== LSH 512 bits (random data, l2 ground truth) ==========
-build time: 0.171287 seconds
-recall@10: 0.0980 | latency: 0.014159s | index size: 6.8536MB
-
-========== LSH 1024 bits (random data, l2 ground truth) ==========
-build time: 0.445433 seconds
-recall@10: 0.1930 | latency: 0.015085s | index size: 13.7071MB
-
-========== LSH 2048 bits (random data, l2 ground truth) ==========
-build time: 1.282779 seconds
-recall@10: 0.3210 | latency: 0.032902s | index size: 27.4142MB
-
-========== LSH 4096 bits (random data, l2 ground truth) ==========
-build time: 7.690078 seconds
-recall@10: 0.4720 | latency: 0.124756s | index size: 54.8282MB
-
-========== Cosine Flat (random data) ==========
-build time: 0.054626 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.355711s | index size: 146.4844MB
-
-========== LSH 256 bits (random data, cosine ground truth) ==========
-build time: 0.176660 seconds
-recall@10: 0.0210 | latency: 0.014243s | index size: 3.4268MB
-
-========== LSH 512 bits (random data, cosine ground truth) ==========
-build time: 0.197258 seconds
-recall@10: 0.0980 | latency: 0.017959s | index size: 6.8536MB
-
-========== LSH 1024 bits (random data, cosine ground truth) ==========
-build time: 0.398298 seconds
-recall@10: 0.1930 | latency: 0.018056s | index size: 13.7071MB
-
-========== LSH 2048 bits (random data, cosine ground truth) ==========
-build time: 1.262504 seconds
-recall@10: 0.3210 | latency: 0.031029s | index size: 27.4142MB
-
-========== LSH 4096 bits (random data, cosine ground truth) ==========
-build time: 6.554156 seconds
-recall@10: 0.4720 | latency: 0.082829s | index size: 54.8282MB
-
-========== Flat (clustered data) ==========
-build time: 0.031825 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.429562s | index size: 146.4844MB
-
-========== LSH 256 bits (clustered data, l2 ground truth) ==========
-build time: 0.084000 seconds
-recall@10: 0.0080 | latency: 0.008019s | index size: 3.4268MB
-
-========== LSH 512 bits (clustered data, l2 ground truth) ==========
-build time: 0.158070 seconds
-recall@10: 0.0170 | latency: 0.009372s | index size: 6.8536MB
-
-========== LSH 1024 bits (clustered data, l2 ground truth) ==========
-build time: 0.330379 seconds
-recall@10: 0.0360 | latency: 0.016712s | index size: 13.7071MB
-
-========== LSH 2048 bits (clustered data, l2 ground truth) ==========
-build time: 1.765765 seconds
-recall@10: 0.1000 | latency: 0.118575s | index size: 27.4142MB
-
-========== LSH 4096 bits (clustered data, l2 ground truth) ==========
-build time: 11.399711 seconds
-recall@10: 0.1540 | latency: 0.180202s | index size: 54.8282MB
-
-========== Cosine Flat (clustered data) ==========
-build time: 0.098282 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.458917s | index size: 146.4844MB
-
-========== LSH 256 bits (clustered data, cosine ground truth) ==========
-build time: 0.166564 seconds
-recall@10: 0.0090 | latency: 0.012971s | index size: 3.4268MB
-
-========== LSH 512 bits (clustered data, cosine ground truth) ==========
-build time: 0.547317 seconds
-recall@10: 0.0240 | latency: 0.014505s | index size: 6.8536MB
-
-========== LSH 1024 bits (clustered data, cosine ground truth) ==========
-build time: 0.998362 seconds
-recall@10: 0.0430 | latency: 0.019053s | index size: 13.7071MB
-
-========== LSH 2048 bits (clustered data, cosine ground truth) ==========
-build time: 1.705726 seconds
-recall@10: 0.0980 | latency: 0.062687s | index size: 27.4142MB
-
-========== LSH 4096 bits (clustered data, cosine ground truth) ==========
-build time: 8.402529 seconds
-recall@10: 0.1660 | latency: 0.135642s | index size: 54.8282MB
-
-========== Flat (random data) ==========
-build time: 0.033408 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.419600s | index size: 146.4844MB
-
-build time: 32.647986 seconds
-
+build time: 0.020033 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.373639s | index size: 146.4844MB
+build time: 27.335029 seconds
 ========== HNSW M=32, efSearch=16 (random data) ==========
-recall@10: 0.0380 | latency: 0.013287s | index size: 172.4442MB
-
+recall@10: 0.0450 | latency: 0.009307s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=32 (random data) ==========
-recall@10: 0.0810 | latency: 0.018082s | index size: 172.4442MB
-
+recall@10: 0.0810 | latency: 0.027066s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=64 (random data) ==========
-recall@10: 0.1320 | latency: 0.029460s | index size: 172.4442MB
-
+recall@10: 0.1330 | latency: 0.030652s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=128 (random data) ==========
-recall@10: 0.2400 | latency: 0.055983s | index size: 172.4442MB
-
+recall@10: 0.2200 | latency: 0.065020s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=256 (random data) ==========
-recall@10: 0.3960 | latency: 0.170846s | index size: 172.4442MB
-
+recall@10: 0.3770 | latency: 0.122630s | index size: 172.4442MB
 ========== HNSW M=8, efSearch=64 (random data) ==========
-build time: 10.849794 seconds
-recall@10: 0.0280 | latency: 0.010085s | index size: 154.1704MB
-
+build time: 8.246602 seconds
+recall@10: 0.0380 | latency: 0.008248s | index size: 154.1704MB
 ========== HNSW M=16, efSearch=64 (random data) ==========
-build time: 19.348823 seconds
-recall@10: 0.0680 | latency: 0.018001s | index size: 160.2490MB
-
+build time: 14.162722 seconds
+recall@10: 0.0790 | latency: 0.018874s | index size: 160.2490MB
 ========== HNSW M=64, efSearch=64 (random data) ==========
-build time: 34.719584 seconds
-recall@10: 0.1890 | latency: 0.060333s | index size: 196.8465MB
-
-========== Cosine Flat (random data) ==========
-build time: 0.075988 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.413906s | index size: 146.4844MB
-
-build time: 24.721907 seconds
-
-========== HNSW M=32, efSearch=16 (random data, cosine ground truth) ==========
-recall@10: 0.0420 | latency: 0.014821s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=32 (random data, cosine ground truth) ==========
-recall@10: 0.0760 | latency: 0.023765s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=64 (random data, cosine ground truth) ==========
-recall@10: 0.1450 | latency: 0.028959s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=128 (random data, cosine ground truth) ==========
-recall@10: 0.2410 | latency: 0.061527s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=256 (random data, cosine ground truth) ==========
-recall@10: 0.3910 | latency: 0.162865s | index size: 172.4442MB
-
-========== HNSW M=8, efSearch=64 (random data, cosine ground truth) ==========
-build time: 7.715543 seconds
-recall@10: 0.0300 | latency: 0.007922s | index size: 154.1704MB
-
-========== HNSW M=16, efSearch=64 (random data, cosine ground truth) ==========
-build time: 13.410208 seconds
-recall@10: 0.0700 | latency: 0.017487s | index size: 160.2490MB
-
-========== HNSW M=64, efSearch=64 (random data, cosine ground truth) ==========
-build time: 30.938834 seconds
-recall@10: 0.2140 | latency: 0.075281s | index size: 196.8465MB
-
+build time: 36.079458 seconds
+recall@10: 0.1810 | latency: 0.051990s | index size: 196.8465MB
 ========== Flat (clustered data) ==========
-build time: 0.093845 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.445665s | index size: 146.4844MB
-
-build time: 19.760735 seconds
-
+build time: 0.041351 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.583915s | index size: 146.4844MB
+build time: 23.312758 seconds
 ========== HNSW M=32, efSearch=16 (clustered data) ==========
-recall@10: 0.5290 | latency: 0.009520s | index size: 172.4442MB
-
+recall@10: 0.5240 | latency: 0.007632s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=32 (clustered data) ==========
-recall@10: 0.6640 | latency: 0.010888s | index size: 172.4442MB
-
+recall@10: 0.6780 | latency: 0.016392s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=64 (clustered data) ==========
-recall@10: 0.8150 | latency: 0.018329s | index size: 172.4442MB
-
+recall@10: 0.8160 | latency: 0.018519s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=128 (clustered data) ==========
-recall@10: 0.9290 | latency: 0.032626s | index size: 172.4442MB
-
+recall@10: 0.9240 | latency: 0.062594s | index size: 172.4442MB
 ========== HNSW M=32, efSearch=256 (clustered data) ==========
-recall@10: 0.9770 | latency: 0.056071s | index size: 172.4442MB
-
+recall@10: 0.9820 | latency: 0.130074s | index size: 172.4442MB
 ========== HNSW M=8, efSearch=64 (clustered data) ==========
-build time: 4.735139 seconds
-recall@10: 0.4880 | latency: 0.005935s | index size: 154.1704MB
-
+build time: 7.041177 seconds
+recall@10: 0.4540 | latency: 0.005133s | index size: 154.1704MB
 ========== HNSW M=16, efSearch=64 (clustered data) ==========
-build time: 8.079934 seconds
-recall@10: 0.6570 | latency: 0.010980s | index size: 160.2490MB
-
+build time: 8.727483 seconds
+recall@10: 0.6510 | latency: 0.010995s | index size: 160.2490MB
 ========== HNSW M=64, efSearch=64 (clustered data) ==========
-build time: 25.274115 seconds
-recall@10: 0.8990 | latency: 0.031275s | index size: 196.8465MB
-
-========== Cosine Flat (clustered data) ==========
-build time: 0.141899 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.412410s | index size: 146.4844MB
-
-build time: 20.127684 seconds
-
-========== HNSW M=32, efSearch=16 (clustered data, cosine ground truth) ==========
-recall@10: 0.5090 | latency: 0.021644s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=32 (clustered data, cosine ground truth) ==========
-recall@10: 0.6730 | latency: 0.016036s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=64 (clustered data, cosine ground truth) ==========
-recall@10: 0.8200 | latency: 0.022486s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=128 (clustered data, cosine ground truth) ==========
-recall@10: 0.9200 | latency: 0.036082s | index size: 172.4442MB
-
-========== HNSW M=32, efSearch=256 (clustered data, cosine ground truth) ==========
-recall@10: 0.9820 | latency: 0.085246s | index size: 172.4442MB
-
-========== HNSW M=8, efSearch=64 (clustered data, cosine ground truth) ==========
-build time: 5.147551 seconds
-recall@10: 0.4790 | latency: 0.010150s | index size: 154.1704MB
-
-========== HNSW M=16, efSearch=64 (clustered data, cosine ground truth) ==========
-build time: 8.709298 seconds
-recall@10: 0.6480 | latency: 0.014943s | index size: 160.2490MB
-
-========== HNSW M=64, efSearch=64 (clustered data, cosine ground truth) ==========
-build time: 33.108088 seconds
-recall@10: 0.8850 | latency: 0.071571s | index size: 196.8465MB
-
-========== Cosine Flat (financebench) ==========
-build time: 0.417935 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.637678s | index size: 152.5914MB
-
-========== PQ m=32, nbits=6 (financebench, cosine ground truth) ==========
-build time: 2.875412 seconds
-recall@10: 0.3433 | latency: 0.373407s | index size: 2.4781MB
-
-========== PQ m=32, nbits=8 (financebench, cosine ground truth) ==========
-build time: 31.973239 seconds
-recall@10: 0.4573 | latency: 0.063743s | index size: 3.5541MB
-
-========== PQ m=32, nbits=10 (financebench, cosine ground truth) ==========
-build time: 213.938344 seconds
-recall@10: 0.5187 | latency: 0.366334s | index size: 5.4738MB
-
-========== PQ m=8, nbits=10 (financebench, cosine ground truth) ==========
-build time: 65.220465 seconds
-recall@10: 0.2207 | latency: 0.064198s | index size: 2.4935MB
-
-========== PQ m=16, nbits=10 (financebench, cosine ground truth) ==========
-build time: 148.663101 seconds
-recall@10: 0.3313 | latency: 0.231692s | index size: 3.4869MB
-
-========== PQ m=64, nbits=10 (financebench, cosine ground truth) ==========
-build time: 42.148774 seconds
-recall@10: 0.7267 | latency: 0.705322s | index size: 9.4475MB
-
-========== PQ m=192, nbits=10 (financebench, cosine ground truth) ==========
-build time: 54.262557 seconds
-recall@10: 0.9553 | latency: 2.251009s | index size: 25.3425MB
-
-========== Cosine Flat (financebench) ==========
-build time: 0.102882 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.559735s | index size: 152.5914MB
-
-========== LSH 256 bits (financebench, cosine ground truth) ==========
-build time: 0.104993 seconds
-recall@10: 0.3140 | latency: 0.011966s | index size: 3.5541MB
-
-========== LSH 512 bits (financebench, cosine ground truth) ==========
-build time: 0.153125 seconds
-recall@10: 0.4873 | latency: 0.017574s | index size: 7.1081MB
-
-========== LSH 1024 bits (financebench, cosine ground truth) ==========
-build time: 0.454664 seconds
-recall@10: 0.6133 | latency: 0.049899s | index size: 14.2160MB
-
-========== LSH 2048 bits (financebench, cosine ground truth) ==========
-build time: 0.998080 seconds
-recall@10: 0.6993 | latency: 0.093635s | index size: 28.4320MB
-
-========== LSH 4096 bits (financebench, cosine ground truth) ==========
-build time: 5.868682 seconds
-recall@10: 0.7913 | latency: 0.190438s | index size: 56.8639MB
-
-========== Cosine Flat (financebench) ==========
-build time: 0.049801 seconds
-recall@10: 1.0000 (ground truth) | latency: 0.606175s | index size: 152.5914MB
-
-build time: 8.134170 seconds
-
-========== HNSW M=32, efSearch=16 (financebench, cosine ground truth) ==========
-recall@10: 0.7747 | latency: 0.007133s | index size: 179.6351MB
-
-========== HNSW M=32, efSearch=32 (financebench, cosine ground truth) ==========
-recall@10: 0.8953 | latency: 0.008704s | index size: 179.6351MB
-
-========== HNSW M=32, efSearch=64 (financebench, cosine ground truth) ==========
-recall@10: 0.9313 | latency: 0.010917s | index size: 179.6351MB
-
-========== HNSW M=32, efSearch=128 (financebench, cosine ground truth) ==========
-recall@10: 0.9853 | latency: 0.023367s | index size: 179.6351MB
-
-========== HNSW M=32, efSearch=256 (financebench, cosine ground truth) ==========
-recall@10: 0.9887 | latency: 0.040589s | index size: 179.6351MB
-
-========== HNSW M=8, efSearch=64 (financebench, cosine ground truth) ==========
-build time: 3.797913 seconds
-recall@10: 0.8153 | latency: 0.007924s | index size: 160.5979MB
-
-========== HNSW M=16, efSearch=64 (financebench, cosine ground truth) ==========
-build time: 4.655466 seconds
-recall@10: 0.8993 | latency: 0.006353s | index size: 166.9307MB
-
-========== HNSW M=64, efSearch=64 (financebench, cosine ground truth) ==========
-build time: 10.490317 seconds
-recall@10: 0.9673 | latency: 0.017489s | index size: 205.0556MB
+build time: 28.820982 seconds
+recall@10: 0.8850 | latency: 0.029318s | index size: 196.8465MB
+=== Generate FinanceBench Data ===
+loading cached embeddings
+========== Flat (financebench) ==========
+build time: 0.079375 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.623661s | index size: 152.5914MB
+========== LSH 256 bits (financebench) ==========
+build time: 0.315202 seconds
+recall@10: 0.3140 | latency: 0.034707s | index size: 3.5541MB
+========== LSH 512 bits (financebench) ==========
+build time: 0.410287 seconds
+recall@10: 0.4873 | latency: 0.048779s | index size: 7.1081MB
+========== LSH 1024 bits (financebench) ==========
+build time: 0.928654 seconds
+recall@10: 0.6133 | latency: 0.058458s | index size: 14.2160MB
+========== LSH 2048 bits (financebench) ==========
+build time: 2.210446 seconds
+recall@10: 0.6993 | latency: 0.142640s | index size: 28.4320MB
+========== LSH 4096 bits (financebench) ==========
+build time: 9.760538 seconds
+recall@10: 0.7913 | latency: 0.201859s | index size: 56.8639MB
+=== Generate FinanceBench Data ===
+loading cached embeddings
+========== Flat (financebench) ==========
+build time: 0.027736 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.629755s | index size: 152.5914MB
+========== PQ m=32, nbits=6 (financebench) ==========
+build time: 3.131988 seconds
+recall@10: 0.3847 | latency: 0.370415s | index size: 2.4781MB
+========== PQ m=32, nbits=8 (financebench) ==========
+build time: 32.599101 seconds
+recall@10: 0.4893 | latency: 0.072800s | index size: 3.5541MB
+========== PQ m=32, nbits=10 (financebench) ==========
+build time: 221.135771 seconds
+recall@10: 0.5533 | latency: 0.408260s | index size: 5.4738MB
+========== PQ m=8, nbits=10 (financebench) ==========
+build time: 67.811829 seconds
+recall@10: 0.2360 | latency: 0.099467s | index size: 2.4935MB
+========== PQ m=16, nbits=10 (financebench) ==========
+build time: 166.056363 seconds
+recall@10: 0.3840 | latency: 0.252223s | index size: 3.4869MB
+========== PQ m=64, nbits=10 (financebench) ==========
+build time: 44.811697 seconds
+recall@10: 0.7553 | latency: 0.739527s | index size: 9.4475MB
+========== PQ m=192, nbits=10 (financebench) ==========
+build time: 54.369109 seconds
+recall@10: 0.9567 | latency: 2.310311s | index size: 25.3425MB
+=== Generate FinanceBench Data ===
+loading cached embeddings
+========== Flat (financebench) ==========
+build time: 0.042449 seconds
+recall@10: 1.0000 (ground truth) | latency: 0.746057s | index size: 152.5914MB
+build time: 10.786344 seconds
+========== HNSW M=32, efSearch=16 (financebench) ==========
+recall@10: 0.7807 | latency: 0.007319s | index size: 179.6351MB
+========== HNSW M=32, efSearch=32 (financebench) ==========
+recall@10: 0.8800 | latency: 0.006436s | index size: 179.6351MB
+========== HNSW M=32, efSearch=64 (financebench) ==========
+recall@10: 0.9307 | latency: 0.010821s | index size: 179.6351MB
+========== HNSW M=32, efSearch=128 (financebench) ==========
+recall@10: 0.9847 | latency: 0.033011s | index size: 179.6351MB
+========== HNSW M=32, efSearch=256 (financebench) ==========
+recall@10: 0.9893 | latency: 0.051851s | index size: 179.6351MB
+========== HNSW M=8, efSearch=64 (financebench) ==========
+build time: 3.813002 seconds
+recall@10: 0.8140 | latency: 0.007108s | index size: 160.5979MB
+========== HNSW M=16, efSearch=64 (financebench) ==========
+build time: 4.671417 seconds
+recall@10: 0.9013 | latency: 0.007980s | index size: 166.9307MB
+========== HNSW M=64, efSearch=64 (financebench) ==========
+build time: 10.213402 seconds
+recall@10: 0.9647 | latency: 0.019350s | index size: 205.0556MB

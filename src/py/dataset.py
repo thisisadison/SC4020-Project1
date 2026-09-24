@@ -59,7 +59,11 @@ def generate_clustered_data(nb=128000, nq=100, centers=6, n_features=64, random_
 
     xb, xq = train_test_split(X_correlated, train_size=nb, test_size=nq, shuffle=True, random_state=random_state)
 
-    return xb.astype("float32"), xq.astype("float32")
+    # unit length, like the random and financebench vectors, so l2 ranks neighbours the same as cosine
+    xb = normalize(xb, norm='l2').astype('float32')
+    xq = normalize(xq, norm='l2').astype('float32')
+
+    return xb, xq
 
 
 
