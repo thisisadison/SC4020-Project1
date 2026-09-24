@@ -48,6 +48,26 @@ def build_flat_index(xb: np.ndarray, d: int):
 
 
 
+def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
+    """
+    Build LSH index: generates nbits random hyperplanes and hashes each
+    vector into an nbits-length binary code based on which side of each
+    hyperplane it falls on.
+
+    :param d: dimension of vectors
+    :param nbits: number of random hash functions (hyperplanes) / bits per code
+    :return: empty LSH index, ready for add_vectors
+    """
+    # print("\n=== Build LSH Index ===")
+    index = faiss.IndexLSH(d, nbits)
+    # print("\nTrained:", index.is_trained)
+
+    add_vectors(index, xb)
+
+    return index
+
+
+
 def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray, metric=faiss.METRIC_L2):
     """
     Build compressed vector for Product Quantization: splits each vector into m
@@ -92,25 +112,6 @@ def build_opq_index(d: int, m: int, nbits: int, xb: np.ndarray):
 
     return index
 
-
-
-def build_lsh_index(d: int, nbits: int, xb: np.ndarray):
-    """
-    Build LSH index: generates nbits random hyperplanes and hashes each
-    vector into an nbits-length binary code based on which side of each
-    hyperplane it falls on.
-
-    :param d: dimension of vectors
-    :param nbits: number of random hash functions (hyperplanes) / bits per code
-    :return: empty LSH index, ready for add_vectors
-    """
-    # print("\n=== Build LSH Index ===")
-    index = faiss.IndexLSH(d, nbits)
-    # print("\nTrained:", index.is_trained)
-
-    add_vectors(index, xb)
-
-    return index
 
 
 

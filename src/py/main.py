@@ -10,6 +10,106 @@ SYNTHETIC_NQ = 100     # synthetic query count
 
 
 
+def run_lsh_l2_clustered():
+    """
+    Use clustered data for lsh search
+    """
+    xb_clustered, xq_clustered = generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D)
+
+    print(f"\n========== Flat (clustered data) ==========")
+
+    flat_index = measure_build_time(build_flat_index, xb=xb_clustered, d=D)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
+    flat_latency = measure_latency(flat_index, xq_clustered, k=10)
+    flat_size = measure_index_size(flat_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits (clustered data, l2 ground truth) ==========")
+
+        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_clustered)
+        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
+        get_metrics(pred_ids, gt_ids, lsh_index, xq_clustered, k=10)
+
+
+
+def run_lsh_cosine_clustered():
+    """
+    Use clustered data for lsh search
+    """
+    xb_clustered, xq_clustered = generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D)
+
+    print(f"\n========== Cosine Flat (clustered data) ==========")
+
+    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_clustered, xq=xq_clustered, d=D)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
+    flat_size = measure_index_size(cosine_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits (clustered data, cosine ground truth) ==========")
+
+        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_norm)
+        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
+
+
+
+def run_lsh_l2_random():
+    """
+    Use random data for lsh search
+    """
+    xb_random, xq_random = generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D)
+
+    print(f"\n========== Flat (random data) ==========")
+
+    flat_index = measure_build_time(build_flat_index, xb=xb_random, d=D)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_random)
+    flat_latency = measure_latency(flat_index, xq_random, k=10)
+    flat_size = measure_index_size(flat_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits (random data, l2 ground truth) ==========")
+
+        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_random)
+        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_random)
+        get_metrics(pred_ids, gt_ids, lsh_index, xq_random, k=10)
+
+
+
+def run_lsh_cosine_random():
+    """
+    Use random data for lsh search
+    """
+    xb_random, xq_random = generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D)
+
+    print(f"\n========== Cosine Flat (random data) ==========")
+
+    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_random, xq=xq_random, d=D)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
+    flat_size = measure_index_size(cosine_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    for nbits in [256, 512, 1024, 2048, 4096]:
+
+        print(f"\n========== LSH {nbits} bits (random data, cosine ground truth) ==========")
+
+        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_norm)
+        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
+
+
+
 def run_pq_l2_random():
     """
     Use random data for pq search
@@ -147,106 +247,6 @@ def run_pq_cosine_clustered():
         pq_index = measure_build_time(build_pq_index, d=D, m=m, nbits=10, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
         _, pred_ids = search_index(pq_index, noNeighbors=10, noQueries=100, xq=xq_norm)
         get_metrics(pred_ids, gt_ids, pq_index, xq_norm, k=10)
-
-
-
-def run_lsh_l2_clustered():
-    """
-    Use clustered data for lsh search
-    """
-    xb_clustered, xq_clustered = generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D)
-
-    print(f"\n========== Flat (clustered data) ==========")
-
-    flat_index = measure_build_time(build_flat_index, xb=xb_clustered, d=D)
-    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
-    flat_latency = measure_latency(flat_index, xq_clustered, k=10)
-    flat_size = measure_index_size(flat_index)
-
-    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
-
-    for nbits in [256, 512, 1024, 2048, 4096]:
-
-        print(f"\n========== LSH {nbits} bits (clustered data, l2 ground truth) ==========")
-
-        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_clustered)
-        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_clustered)
-        get_metrics(pred_ids, gt_ids, lsh_index, xq_clustered, k=10)
-
-
-
-def run_lsh_cosine_clustered():
-    """
-    Use clustered data for lsh search
-    """
-    xb_clustered, xq_clustered = generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D)
-
-    print(f"\n========== Cosine Flat (clustered data) ==========")
-
-    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_clustered, xq=xq_clustered, d=D)
-    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
-    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
-    flat_size = measure_index_size(cosine_index)
-
-    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
-
-    for nbits in [256, 512, 1024, 2048, 4096]:
-
-        print(f"\n========== LSH {nbits} bits (clustered data, cosine ground truth) ==========")
-
-        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_norm)
-        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
-        get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
-
-
-
-def run_lsh_l2_random():
-    """
-    Use random data for lsh search
-    """
-    xb_random, xq_random = generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D)
-
-    print(f"\n========== Flat (random data) ==========")
-
-    flat_index = measure_build_time(build_flat_index, xb=xb_random, d=D)
-    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=100, xq=xq_random)
-    flat_latency = measure_latency(flat_index, xq_random, k=10)
-    flat_size = measure_index_size(flat_index)
-
-    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
-
-    for nbits in [256, 512, 1024, 2048, 4096]:
-
-        print(f"\n========== LSH {nbits} bits (random data, l2 ground truth) ==========")
-
-        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_random)
-        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_random)
-        get_metrics(pred_ids, gt_ids, lsh_index, xq_random, k=10)
-
-
-
-def run_lsh_cosine_random():
-    """
-    Use random data for lsh search
-    """
-    xb_random, xq_random = generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D)
-
-    print(f"\n========== Cosine Flat (random data) ==========")
-
-    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_random, xq=xq_random, d=D)
-    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=100, xq=xq_norm)
-    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
-    flat_size = measure_index_size(cosine_index)
-
-    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
-
-    for nbits in [256, 512, 1024, 2048, 4096]:
-
-        print(f"\n========== LSH {nbits} bits (random data, cosine ground truth) ==========")
-
-        lsh_index = measure_build_time(build_lsh_index, d=D, nbits=nbits, xb=xb_norm)
-        _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=100, xq=xq_norm)
-        get_metrics(pred_ids, gt_ids, lsh_index, xq_norm, k=10)
 
 
 
@@ -502,15 +502,15 @@ def run_hnsw_cosine_finance():
 
 
 def run_all_synthetic():
-    run_pq_l2_random()
-    run_pq_cosine_random()
-    run_pq_l2_clustered()
-    run_pq_cosine_clustered()
-
     run_lsh_l2_random()
     run_lsh_cosine_random()
     run_lsh_l2_clustered()
     run_lsh_cosine_clustered()
+
+    run_pq_l2_random()
+    run_pq_cosine_random()
+    run_pq_l2_clustered()
+    run_pq_cosine_clustered()
 
     run_hnsw_l2_random()
     run_hnsw_cosine_random()
@@ -520,8 +520,8 @@ def run_all_synthetic():
 
 
 def run_all_finance():
-    run_pq_cosine_finance()
     run_lsh_cosine_finance()
+    run_pq_cosine_finance()
     run_hnsw_cosine_finance()
 
 
