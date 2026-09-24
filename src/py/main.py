@@ -392,8 +392,44 @@ def run_hnsw_cosine_clustered():
 
 
 
+def run_pq_cosine_finance():
+    """
+    Use financebench filing chunks for pq search with cosine ground truth
+    """
+    xb_fin, xq_fin, _ = generate_financebench_data()
+    d = xb_fin.shape[1]  # 384 for all-MiniLM-L6-v2
+    nq = xq_fin.shape[0]  # all 150 questions
+
+    print(f"\n========== Cosine Flat (financebench) ==========")
+
+    cosine_index, xb_norm, xq_norm = measure_build_time(build_flat_index_cosine, xb=xb_fin, xq=xq_fin, d=d)
+    _, gt_ids = search_index(cosine_index, noNeighbors=10, noQueries=nq, xq=xq_norm)
+    flat_latency = measure_latency(cosine_index, xq_norm, k=10)
+    flat_size = measure_index_size(cosine_index)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    for nbits in [6, 8, 10]:
+
+        print(f"\n========== PQ m=32, nbits={nbits} (financebench, cosine ground truth) ==========")
+
+        pq_index = measure_build_time(build_pq_index, d=d, m=32, nbits=nbits, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+        _, pred_ids = search_index(pq_index, noNeighbors=10, noQueries=nq, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, pq_index, xq_norm, k=10)
+
+    # m=32 at nbits=10 already measured in the loop above
+    for m in [8, 16, 64]:
+
+        print(f"\n========== PQ m={m}, nbits=10 (financebench, cosine ground truth) ==========")
+
+        pq_index = measure_build_time(build_pq_index, d=d, m=m, nbits=10, xb=xb_norm, metric=faiss.METRIC_INNER_PRODUCT)
+        _, pred_ids = search_index(pq_index, noNeighbors=10, noQueries=nq, xq=xq_norm)
+        get_metrics(pred_ids, gt_ids, pq_index, xq_norm, k=10)
+
+
+
 def main():
-    run_hnsw_cosine_random()
+    run_pq_cosine_finance()
 
 
 
