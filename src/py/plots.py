@@ -115,7 +115,9 @@ def plot_parameter_sweeps(df, dataset="clustered"):
         ("HNSW — M (efSearch=64)", "HNSW", "M", hnsw[hnsw["efSearch"] == 64]),
     ]
 
-    fig, axes = plt.subplots(1, 5, figsize=(15, 3.2), sharey=True)
+    fig, grid = plt.subplots(2, 3, figsize=(10.5, 6.4), sharey=True)  # two rows so the figure fits a portrait page
+    axes = grid.ravel()
+    axes[-1].axis("off")  # five sweeps, six slots
 
     for ax, (title, method, key, rows) in zip(axes, panels):
         rows = rows.sort_values(key)
@@ -125,13 +127,14 @@ def plot_parameter_sweeps(df, dataset="clustered"):
                 marker="o", markersize=6, markeredgecolor="white", markeredgewidth=0.8)
 
         logx = max(xs) / min(xs) > 8
-        style_axes(ax, key, "recall@10" if ax is axes[0] else "", title, logx=logx)
+        style_axes(ax, key, "recall@10" if ax in grid[:, 0] else "", title, logx=logx)
         ax.set_xticks(xs)
         ax.set_xticklabels([str(x) for x in xs])
         ax.minorticks_off()
 
     fig.suptitle(f"Parameter sensitivity — {DATASET_LABEL[dataset]} data, d=384",
-                 fontsize=11, color=INK, y=1.03)
+                 fontsize=11, color=INK, y=1.01)
+    fig.tight_layout()
     save(fig, "fig1_parameter_sweeps.png")
 
 

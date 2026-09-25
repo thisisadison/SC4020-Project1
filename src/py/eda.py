@@ -204,7 +204,8 @@ def plot_metric_comparison(data):
     Right: overlap between the top-10 neighbours chosen by each metric
     """
     names = list(data)
-    fig, axes = plt.subplots(1, len(names) + 1, figsize=(4.2 * (len(names) + 1), 3.6))
+    fig, axes = plt.subplots(2, 2, figsize=(9, 7.4))  # 2x2 so the figure fits a portrait page
+    axes = axes.ravel()
     overlaps = {}
 
     for ax, name in zip(axes[:-1], names):
@@ -228,6 +229,9 @@ def plot_metric_comparison(data):
 
         style_axes(ax, "cosine similarity", "squared L2 distance", LABEL[name])
 
+    for ax in axes[len(names):-1]:  # hide scatter slots with no dataset, e.g. financebench not cached yet
+        ax.axis("off")
+
     ax = axes[-1]
     bars = ax.bar([LABEL[n] for n in names], [overlaps[n] for n in names], color=DARK, width=0.55)
     for bar, n in zip(bars, names):
@@ -238,7 +242,8 @@ def plot_metric_comparison(data):
     ax.grid(axis="x", visible=False)
 
     fig.suptitle("L2 vs cosine — identical ranking on unit-length vectors",
-                 fontsize=11, color=INK, y=1.03)
+                 fontsize=11, color=INK, y=1.0)
+    fig.tight_layout(h_pad=2.5)
     save(fig, "eda5_metric_comparison.png")
 
     for n in names:
