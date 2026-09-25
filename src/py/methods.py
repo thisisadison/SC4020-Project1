@@ -94,6 +94,29 @@ def build_pq_index(d: int, m: int, nbits: int, xb: np.ndarray):
 
 
 
+def build_ivfpq_index(d: int, nlist: int, m: int, nbits: int, xb: np.ndarray):
+    """
+    Build IVF-PQ index: k-means splits the vector db into nlist cells, each vector is
+    stored as a PQ code of its offset (residual) from its cell centre, and a search
+    only scans the nprobe cells nearest the query instead of every code
+
+    :param d: dimension of vectors
+    :param nlist: number of cells
+    :param m: number of subspaces
+    :param nbits: bits per subquantizer code
+    :param xb: vector db
+    :return: trained IVF-PQ index, set index.nprobe before searching
+    """
+    quantizer = faiss.IndexFlatL2(d)  # holds the cell centres, finds the nearest cells for a vector
+    index = faiss.IndexIVFPQ(quantizer, d, nlist, m, nbits)
+    index.train(xb)  # k-means for the cell centres, then k-means for the pq codebooks
+
+    add_vectors(index, xb)
+
+    return index
+
+
+
 def build_hnsw_index(d: int, M: int, xb: np.ndarray, efConstruction=40):
     """
     Build HNSW index: builds a multi-layer proximity graph where each vector

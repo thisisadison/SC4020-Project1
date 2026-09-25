@@ -322,30 +322,52 @@ def run_hnsw_finance():
 
 
 
-def run_lsh_ablation():
+def load_all_datasets():
     """
-    Ablation: lsh with each bit's threshold learned from the data (the median projection)
-    instead of fixed at 0. The standard lsh runs give the other half of the comparison
+    Load every dataset for the ablations, same settings as the main runs
+
+    :return: dict of dataset name -> (xb, xq)
     """
-    datasets = {
+    return {
         "random": generate_random_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, d=D),
         "clustered": generate_clustered_data(nb=SYNTHETIC_NB, nq=SYNTHETIC_NQ, n_features=D),
         "financebench": generate_financebench_data()[:2],  # labels not needed
     }
 
-    for dataset, (xb, xq) in datasets.items():
+
+
+def run_flat_baseline(dataset: str, xb: np.ndarray, xq: np.ndarray):
+    """
+    Exact search on one dataset: gives the ground truth and the baseline every row is compared against
+
+    :return: gt_ids, the true top-10 of every query
+    """
+    d = xb.shape[1]
+    nq = xq.shape[0]
+
+    print(f"\n========== Flat ({dataset}) ==========")
+
+    flat_index = measure_build_time(build_flat_index, xb=xb, d=d)
+    _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=nq, xq=xq)
+    flat_latency = measure_latency(flat_index, xq, k=10)
+    flat_size = measure_index_size(flat_index)
+    set_baseline(flat_latency, flat_size)
+
+    print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+
+    return gt_ids
+
+
+
+def run_lsh_ablation():
+    """
+    Ablation: lsh with each bit's threshold learned from the data (the median projection)
+    instead of fixed at 0. The standard lsh runs give the other half of the comparison
+    """
+    for dataset, (xb, xq) in load_all_datasets().items():
         d = xb.shape[1]
         nq = xq.shape[0]
-
-        print(f"\n========== Flat ({dataset}) ==========")
-
-        flat_index = measure_build_time(build_flat_index, xb=xb, d=d)
-        _, gt_ids = search_index(flat_index, noNeighbors=10, noQueries=nq, xq=xq)
-        flat_latency = measure_latency(flat_index, xq, k=10)
-        flat_size = measure_index_size(flat_index)
-        set_baseline(flat_latency, flat_size)
-
-        print(f"recall@10: 1.0000 (ground truth) | latency: {flat_latency:.6f}s | index size: {flat_size:.4f}MB\n")
+        gt_ids = run_flat_baseline(dataset, xb, xq)
 
         for nbits in [256, 512, 1024, 2048, 4096]:
 
@@ -354,6 +376,38 @@ def run_lsh_ablation():
             lsh_index = measure_build_time(build_lsh_index, d=d, nbits=nbits, xb=xb, train_thresholds=True)
             _, pred_ids = search_index(lsh_index, noNeighbors=10, noQueries=nq, xq=xq)
             get_metrics(pred_ids, gt_ids, lsh_index, xq, k=10, dataset=dataset, method="LSH-trained", nbits=nbits)
+
+
+
+def run_ivf_ablation():
+    """
+    Ablation: pq with and without an inverted file (ivf) in front of it, at the same
+    code size. Without ivf every code is scanned; with ivf only the nprobe cells
+    nearest the query are, and codes store each vector's offset from its cell centre
+    """
+    m, nbits, nlist = 192, 8, 1024
+
+    for dataset, (xb, xq) in load_all_datasets().items():
+        d = xb.shape[1]
+        nq = xq.shape[0]
+        gt_ids = run_flat_baseline(dataset, xb, xq)
+
+        print(f"\n========== PQ m={m}, nbits={nbits}, no IVF ({dataset}) ==========")
+
+        pq_index = measure_build_time(build_pq_index, d=d, m=m, nbits=nbits, xb=xb)
+        _, pred_ids = search_index(pq_index, noNeighbors=10, noQueries=nq, xq=xq)
+        get_metrics(pred_ids, gt_ids, pq_index, xq, k=10, dataset=dataset, method="PQ-noIVF", m=m, nbits=nbits)
+
+        # nprobe is a search-time knob, so one index serves the whole sweep
+        ivf_index = measure_build_time(build_ivfpq_index, d=d, nlist=nlist, m=m, nbits=nbits, xb=xb)
+
+        for nprobe in [1, 8, 32, 128]:
+
+            print(f"\n========== IVF-PQ nlist={nlist}, nprobe={nprobe}, m={m}, nbits={nbits} ({dataset}) ==========")
+
+            ivf_index.nprobe = nprobe
+            _, pred_ids = search_index(ivf_index, noNeighbors=10, noQueries=nq, xq=xq)
+            get_metrics(pred_ids, gt_ids, ivf_index, xq, k=10, dataset=dataset, method="IVF-PQ", m=m, nbits=nbits, nlist=nlist, nprobe=nprobe)
 
 
 
@@ -382,6 +436,7 @@ def main():
     run_all_synthetic()
     run_all_finance()
     run_lsh_ablation()
+    run_ivf_ablation()
     save_results(RESULTS_PATH)
 
 

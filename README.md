@@ -70,7 +70,7 @@ The first time `main.py` runs, it chunks and embeds the filings (about 20 minute
 
 ## How to run
 
-**1. Experiments** (about 40 minutes, mostly PQ training):
+**1. Experiments** (about 45 minutes, mostly PQ training). This runs the main comparison and the two ablations:
 
 ```bash
 python -u src/py/main.py | tee src/txt/results.txt
@@ -83,6 +83,7 @@ To run only part of it:
 ```bash
 python -u -c "import sys; sys.path.insert(0, 'src/py'); import main; main.run_all_synthetic(); main.save_results(main.RESULTS_PATH)"
 python -u -c "import sys; sys.path.insert(0, 'src/py'); import main; main.run_all_finance(); main.save_results(main.RESULTS_PATH)"
+python -u -c "import sys; sys.path.insert(0, 'src/py'); import main; main.run_lsh_ablation(); main.run_ivf_ablation(); main.save_results(main.RESULTS_PATH)"
 ```
 
 Rows for the same dataset and method are replaced, so the other results in `results.csv` are kept.
@@ -110,6 +111,13 @@ All figures are saved to `src/figures/`.
 | LSH | nbits ∈ {256, 512, 1024, 2048, 4096} |
 | PQ | m = 32 with nbits ∈ {6, 8, 10}; nbits = 10 with m ∈ {8, 16, 64, 192} |
 | HNSW | M = 32 with efSearch ∈ {16, 32, 64, 128, 256}; efSearch = 64 with M ∈ {8, 16, 64} |
+
+**Ablations**
+
+| ablation | what changes | settings |
+|---|---|---|
+| LSH thresholds | each bit split at the data's median instead of at 0 | nbits ∈ {256, 512, 1024, 2048, 4096} |
+| IVF | PQ with an inverted file in front (only the nearest cells are searched) vs plain PQ | m = 192, nbits = 8, nlist = 1024, nprobe ∈ {1, 8, 32, 128} |
 
 ---
 
