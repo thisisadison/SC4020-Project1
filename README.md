@@ -26,7 +26,7 @@ SC4020_Project1/
     │   ├── metrics.py         # recall@k, latency, index size, build time, results table
     │   ├── dataset.py         # random, clustered and FinanceBench data
     │   ├── plots.py           # results figures (fig1–fig7) from results.csv
-    │   └── eda.py             # dataset figures (eda1–eda5)
+    │   └── eda.py             # dataset figures (eda1–eda6)
     ├── txt/
     │   ├── results.csv        # one row per configuration (used by plots.py)
     │   └── results.txt        # raw console log of the last full run (main comparison)

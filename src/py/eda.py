@@ -199,16 +199,15 @@ def plot_intrinsic_dimension(data):
 
 def plot_metric_comparison(data):
     """
-    L2 vs cosine on the vectors as indexed. Left: L2 distance against cosine similarity for
-    query-database pairs; unit-length data falls on the line ||x-y||^2 = 2 - 2cos.
-    Right: overlap between the top-10 neighbours chosen by each metric
+    L2 vs cosine on the vectors as indexed, as two figures. First: L2 distance against
+    cosine similarity for query-database pairs; unit-length data falls on the line
+    ||x-y||^2 = 2 - 2cos. Second: overlap between the top-10 neighbours chosen by each metric
     """
     names = list(data)
-    fig, axes = plt.subplots(2, 2, figsize=(9, 7.4))  # 2x2 so the figure fits a portrait page
-    axes = axes.ravel()
+    fig, axes = plt.subplots(1, len(names), figsize=(4.2 * len(names), 3.6))
     overlaps = {}
 
-    for ax, name in zip(axes[:-1], names):
+    for ax, name in zip(np.atleast_1d(axes), names):
         xb, xq = data[name]
 
         # squared l2 via ||q||^2 + ||x||^2 - 2 q.x, avoiding a (nq, nb, d) array
@@ -229,25 +228,22 @@ def plot_metric_comparison(data):
 
         style_axes(ax, "cosine similarity", "squared L2 distance", LABEL[name])
 
-    for ax in axes[len(names):-1]:  # hide scatter slots with no dataset, e.g. financebench not cached yet
-        ax.axis("off")
+    fig.suptitle("L2 distance against cosine similarity on unit-length vectors", fontsize=11, color=INK, y=1.03)
+    save(fig, "eda5_l2_vs_cosine.png")
 
-    ax = axes[-1]
+    fig, ax = plt.subplots(figsize=(5, 3.4))
     bars = ax.bar([LABEL[n] for n in names], [overlaps[n] for n in names], color=DARK, width=0.55)
     for bar, n in zip(bars, names):
         ax.text(bar.get_x() + bar.get_width() / 2, overlaps[n] + 0.02, f"{overlaps[n]:.2f}",
                 ha="center", fontsize=8, color=INK)
-    style_axes(ax, "", "fraction shared", "Top-10 under L2 vs cosine")
+    style_axes(ax, "", "fraction shared", f"Top-{K} neighbours shared by L2 and cosine")
     ax.set_ylim(0, 1.1)
     ax.grid(axis="x", visible=False)
-
-    fig.suptitle("L2 vs cosine — identical ranking on unit-length vectors",
-                 fontsize=11, color=INK, y=1.0)
-    fig.tight_layout(h_pad=2.5)
-    save(fig, "eda5_metric_comparison.png")
+    save(fig, "eda6_topk_overlap.png")
 
     for n in names:
         print(f"top-{K} overlap, L2 vs cosine, {n}: {overlaps[n]:.3f}")
+
 
 
 
