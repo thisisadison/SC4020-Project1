@@ -199,8 +199,8 @@ def plot_intrinsic_dimension(data):
 
 def plot_metric_comparison(data):
     """
-    L2 vs cosine on the raw vectors. Left: L2 distance against cosine similarity for
-    query-database pairs; unit-norm data falls on the curve ||x-y||^2 = 2 - 2cos.
+    L2 vs cosine on the vectors as indexed. Left: L2 distance against cosine similarity for
+    query-database pairs; unit-length data falls on the line ||x-y||^2 = 2 - 2cos.
     Right: overlap between the top-10 neighbours chosen by each metric
     """
     names = list(data)
@@ -221,15 +221,12 @@ def plot_metric_comparison(data):
         pick = rng.choice(xb.shape[0], size=300, replace=False)  # 300 random database points per query
         ax.scatter(cos[:, pick].ravel(), l2[:, pick].ravel(), s=2, color=DARK, alpha=0.15, linewidths=0)
 
-        if name != "clustered":  # the identity only holds for unit vectors
-            c = np.linspace(cos[:, pick].min(), 1, 100)
-            ax.plot(c, 2 - 2 * c, color=INK_MUTED, linewidth=1, linestyle="--")
-            ax.text(0.97, 0.95, "‖x−y‖² = 2 − 2cos", transform=ax.transAxes, ha="right", va="top",
-                    fontsize=8, color=INK_MUTED)
+        c = np.linspace(cos[:, pick].min(), 1, 100)  # every dataset is unit length, so every panel follows this line
+        ax.plot(c, 2 - 2 * c, color=INK_MUTED, linewidth=1, linestyle="--")
+        ax.text(0.97, 0.95, "‖x−y‖² = 2 − 2cos", transform=ax.transAxes, ha="right", va="top",
+                fontsize=8, color=INK_MUTED)
 
         style_axes(ax, "cosine similarity", "squared L2 distance", LABEL[name])
-        if name == "clustered":  # distances span several orders of magnitude, a log axis shows both groups
-            ax.set_yscale("log")
 
     ax = axes[-1]
     bars = ax.bar([LABEL[n] for n in names], [overlaps[n] for n in names], color=DARK, width=0.55)
