@@ -240,7 +240,7 @@ def plot_metric_comparison(data):
     ax.set_ylim(0, 1.1)
     ax.grid(axis="x", visible=False)
 
-    fig.suptitle("L2 vs cosine on the raw data — identical ranking only when every vector has the same length",
+    fig.suptitle("L2 vs cosine — identical ranking on unit-length vectors",
                  fontsize=11, color=INK, y=1.03)
     save(fig, "eda5_metric_comparison.png")
 

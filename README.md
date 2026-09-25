@@ -29,7 +29,7 @@ SC4020_Project1/
     │   └── eda.py             # dataset figures (eda1–eda5)
     ├── txt/
     │   ├── results.csv        # one row per configuration (used by plots.py)
-    │   └── results.txt        # raw console log of the last full run
+    │   └── results.txt        # raw console log of the last full run (main comparison)
     ├── figures/               # all generated figures
     └── md/
         ├── findings.md        # results tables and observations

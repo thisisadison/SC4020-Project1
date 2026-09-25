@@ -5,7 +5,6 @@ import time
 import faiss
 import statistics
 
-from dataset import generate_random_data
 from methods import *
 
 VERBOSE = False  # set True to see the per-step prints

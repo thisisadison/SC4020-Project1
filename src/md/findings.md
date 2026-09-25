@@ -235,12 +235,46 @@ Standard LSH splits every hyperplane at 0; the ablation learns each split point 
 | 2048 | 0.6993 | 0.6220 | -0.0773 | 7.09 | 28.44 |
 | 4096 | 0.7913 | 0.6660 | -0.1253 | 22.69 | 56.88 |
 
+## Ablation — PQ with and without IVF
+
+IVF-PQ puts an inverted file in front of PQ: k-means splits the database into nlist=1024 cells, each code stores the vector's offset from its cell centre, and a query scans only the nprobe nearest cells. Plain PQ scans every code. Both use m=192, nbits=8.
+
+### `run_ivf_ablation()` — random data, L2 ground truth, k=10
+
+| index | nprobe | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|
+| PQ (no IVF) | — | 0.7770 | 18.02 | 0.5236 | 0.8× | 18.69 |
+| IVF-PQ | 1 | 0.0060 | 24.13 | 0.0060 | 67.4× | 20.96 |
+| IVF-PQ | 8 | 0.0570 | 24.13 | 0.0084 | 48.2× | 20.96 |
+| IVF-PQ | 32 | 0.1380 | 24.13 | 0.0488 | 8.2× | 20.96 |
+| IVF-PQ | 128 | 0.3540 | 24.13 | 0.1852 | 2.2× | 20.96 |
+
+### `run_ivf_ablation()` — clustered+correlated data, L2 ground truth, k=10
+
+| index | nprobe | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|
+| PQ (no IVF) | — | 0.7250 | 23.06 | 0.5658 | 0.9× | 18.69 |
+| IVF-PQ | 1 | 0.0570 | 21.83 | 0.0053 | 92.7× | 20.96 |
+| IVF-PQ | 8 | 0.2650 | 21.83 | 0.0118 | 41.6× | 20.96 |
+| IVF-PQ | 32 | 0.6040 | 21.83 | 0.0496 | 9.9× | 20.96 |
+| IVF-PQ | 128 | 0.8530 | 21.83 | 0.1828 | 2.7× | 20.96 |
+
+### `run_ivf_ablation()` — FinanceBench, L2 ground truth, k=10
+
+| index | nprobe | recall@10 | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|
+| PQ (no IVF) | — | 0.9273 | 15.20 | 0.6790 | 0.8× | 19.45 |
+| IVF-PQ | 1 | 0.4253 | 19.71 | 0.0166 | 34.1× | 21.75 |
+| IVF-PQ | 8 | 0.7267 | 19.71 | 0.0495 | 11.4× | 21.75 |
+| IVF-PQ | 32 | 0.8633 | 19.71 | 0.0846 | 6.7× | 21.75 |
+| IVF-PQ | 128 | 0.9280 | 19.71 | 0.2731 | 2.1× | 21.75 |
+
 ---
 
 # Observations and conclusions — d = 384
 
 Format: **claim**: evidence from the tables → *why* (theory).
-EDA numbers are computed on the normalised random and clustered vectors. FinanceBench EDA is still pending.
+EDA numbers are computed on the normalised vectors of all three datasets.
 
 ## 0. Setup and validity checks
 
@@ -248,7 +282,7 @@ EDA numbers are computed on the normalised random and clustered vectors. Finance
   - PQ and HNSW search with L2.
   - LSH hashes angles, which on unit vectors gives the same ranking (‖x−y‖² = 2 − 2cos θ).
   - So every method runs in its native form against the same neighbours.
-- **Every index size matches its formula** (codes + codebook for PQ, codes + rotation for LSH, vectors + links for HNSW): 0 mismatches across 60 rows.
+- **Every index size matches its formula** (codes + codebook for PQ, codes + rotation for LSH, vectors + links for HNSW): 0 mismatches across the 60 main rows.
 - **Recall and index size are deterministic, except for HNSW recall; latency is noisy.**
   - Flat latency ranges from 0.35s to 0.75s between runs on data of the same size. So every speed comparison uses speedup against the Flat baseline from the same run.
   - LSH and PQ recall reproduce exactly between runs.
@@ -274,7 +308,7 @@ EDA numbers are computed on the normalised random and clustered vectors. Finance
 - **`nbits` matters much less than `m`.** At m=32, going from 64 to 1,024 centroids (nbits 6 → 10) moves random recall only from 0.065 to 0.175. Going from m=32 to m=192 at the same nbits moves it from 0.175 to 0.853.
 - **Largest compression of any method:** 6–62× smaller than Flat (2.4–25.3 MB). *Each vector is stored as m small integers instead of 384 floats.*
 - **`nbits=8` is the fastest PQ setting on every dataset:** 8.7–10.6× faster than Flat, against about 2× at 6 bits and 1.5× at 10 bits. *8-bit codes are exactly one byte, so lookups are byte-aligned. 6- and 10-bit codes have to be unpacked from shared bytes.*
-- **At high recall PQ is slower than exact search.** m=192 runs at 0.2–0.3× Flat's speed on every dataset. *Plain PQ still scans every code (O(n)), doing m table lookups per vector, while Flat uses vectorised matrix multiplication. This is what motivates IVF (§7).*
+- **At high recall PQ is slower than exact search.** m=192 runs at 0.2–0.3× Flat's speed on every dataset. *Plain PQ still scans every code (O(n)), doing m table lookups per vector, while Flat uses vectorised matrix multiplication. This is what motivates IVF (see the IVF ablation).*
 - **Most expensive build, growing steeply with nbits.** At m=32 it takes 2.3s → 30.5s → 203.1s for nbits 6 → 8 → 10. *k-means cost scales with the number of centroids, 2^nbits.*
 - **Build time does not increase steadily with m.** Random takes 62 / 145 / 203 / 40 / 52s for m = 8 / 16 / 32 / 64 / 192, and the same pattern appears on all three datasets. This is reported as observed; it is likely an implementation effect.
 - **PQ needs enough training data.** FAISS warns below about 39 training points per centroid (about 40,000 for nbits=10). The first FinanceBench corpus (1,198 cited passages) could only support nbits ≤ 4, which is why full filings were used. *LSH and HNSW don't have this dependence on data.*
@@ -351,10 +385,10 @@ EDA numbers are computed on the normalised random and clustered vectors. Finance
 
 ## 7. Improvements, limitations, open items
 
-- **Improvements (discussed):**
-  - **IVF:** partition the database into cells and probe only a few, making PQ's scan sub-linear. This addresses PQ being slower than Flat.
-  - **OPQ:** learn a rotation before quantising, so correlated dimensions share a subspace.
-  - **HNSW + PQ:** store PQ codes in the graph to cut HNSW's memory.
+- **Improvements:**
+  - **IVF (tested, see the IVF ablation):** partition the database into cells and probe only a few, making PQ's scan sub-linear. This addresses PQ being slower than Flat.
+  - **OPQ (discussed):** learn a rotation before quantising, so correlated dimensions share a subspace.
+  - **HNSW + PQ (discussed):** store PQ codes in the graph to cut HNSW's memory.
 - **Limitations:**
   - CPU-only laptop timings, with run-to-run noise.
   - One embedding model, and 150 FinanceBench queries.
@@ -364,5 +398,4 @@ EDA numbers are computed on the normalised random and clustered vectors. Finance
   - Parameters were swept one at a time around M=32 / efSearch=64 and m=32 / nbits=10, not as a full grid.
 - **Open items:**
   - A full parameter grid, especially HNSW M × efSearch on random data, to settle LSH vs HNSW.
-  - FinanceBench EDA.
   - Saving chunk texts for the FinanceBench success and failure cases.

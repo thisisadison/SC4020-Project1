@@ -93,10 +93,9 @@ def chunk_text(text: str, chunk_size=500, overlap=100):
 def generate_financebench_data(pdf_dir="data/financebench_pdfs", chunk_size=500, overlap=100,
                                model_name="all-MiniLM-L6-v2", cache_dir="data"):
     """
-    Generate real embedding vectors from the full FinanceBench filings. Cosine similarity is used
-    because the encoder is trained with a cosine objective and vector magnitude reflects
-    chunk length rather than meaning, so only direction carries semantic information.
-    Vectors are returned unit length, which makes cosine and l2 rank identically.
+    Generate real embedding vectors from the full FinanceBench filings. Vectors are returned
+    unit length: the encoder is trained with a cosine objective, so only direction carries
+    meaning, and on unit vectors l2 ranks neighbours the same as cosine.
 
     :param pdf_dir: folder holding the downloaded filings
     :param chunk_size: characters per chunk
