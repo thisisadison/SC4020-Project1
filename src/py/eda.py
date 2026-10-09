@@ -92,7 +92,7 @@ def save(fig, name):
 
 
 
-def plot_projections(data):
+def plot_projections(data, tag=""):
     """
     2-D PCA projection of a database sample: shows whether a dataset has visible structure
     """
@@ -110,7 +110,7 @@ def plot_projections(data):
         ax.set_yticks([])
 
     fig.suptitle(f"2-D PCA projection of {SAMPLE:,} database vectors (d={D})", fontsize=11, color=INK, y=1.03)
-    save(fig, "eda1_projections.png")
+    save(fig, f"eda1_projections{tag}.png")
 
 
 
@@ -140,7 +140,7 @@ def plot_norms(data):
 
 
 
-def plot_similarity(data):
+def plot_similarity(data, tag=""):
     """
     Cosine similarity of each query to its 10 true neighbours vs to random database
     points. The gap between the two is what every ANN method has to exploit
@@ -168,11 +168,11 @@ def plot_similarity(data):
                loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=2)
     fig.suptitle("How much do true neighbours stand out? (cosine similarity, per query)",
                  fontsize=11, color=INK, y=1.03)
-    save(fig, "eda3_neighbour_similarity.png")
+    save(fig, f"eda3_neighbour_similarity{tag}.png")
 
 
 
-def plot_intrinsic_dimension(data):
+def plot_intrinsic_dimension(data, tag=""):
     """
     Cumulative explained variance: how many directions the data really uses out of 384
     """
@@ -193,7 +193,7 @@ def plot_intrinsic_dimension(data):
     style_axes(ax, "number of principal components", "cumulative variance explained",
                f"Intrinsic dimensionality (all datasets nominally d={D})")
     ax.set_ylim(0, 1.02)
-    save(fig, "eda4_intrinsic_dimension.png")
+    save(fig, f"eda4_intrinsic_dimension{tag}.png")
 
 
 
@@ -250,10 +250,19 @@ def plot_metric_comparison(data):
 def main():
     data = load_datasets()
 
-    plot_projections(data)
+    # experiment 1 (synthetic) and experiment 2 (FinanceBench) get separate figures,
+    # so each section of the report shows only its own data
+    groups = {"_synthetic": {n: data[n] for n in ("random", "clustered")}}
+    if "financebench" in data:
+        groups["_financebench"] = {"financebench": data["financebench"]}
+
+    for tag, subset in groups.items():
+        plot_projections(subset, tag)
+        plot_similarity(subset, tag)
+        plot_intrinsic_dimension(subset, tag)
+
+    # appendix figures compare all datasets side by side
     plot_norms(data)
-    plot_similarity(data)
-    plot_intrinsic_dimension(data)
     plot_metric_comparison(data)
 
 
