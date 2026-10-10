@@ -177,17 +177,18 @@ def plot_intrinsic_dimension(data, tag=""):
     Cumulative explained variance: how many directions the data really uses out of 384
     """
     fig, ax = plt.subplots(figsize=(6.4, 3.8))
-    styles = ["-", "--", ":"]
+    styles = {"random": "--", "clustered": "-", "financebench": "-"}  # same line styles as the sweep figures
+    markers = {"random": "s", "clustered": "o", "financebench": "o"}
 
-    for style, (name, (xb, _)) in zip(styles, data.items()):
+    for i, (name, (xb, _)) in enumerate(data.items()):
         pca = PCA(random_state=42).fit(sample_rows(xb))
         cum = np.cumsum(pca.explained_variance_ratio_)
         n90 = int(np.searchsorted(cum, 0.9)) + 1
 
-        ax.plot(np.arange(1, len(cum) + 1), cum, color=DARK, linestyle=style, linewidth=2)
+        ax.plot(np.arange(1, len(cum) + 1), cum, color=DARK, linestyle=styles[name], linewidth=2)
         ax.annotate(f"{LABEL[name]}: {n90} dims for 90%", (n90, 0.9), textcoords="offset points",
-                    xytext=(6, -14 - 12 * styles.index(style)), fontsize=8, color=INK)
-        ax.plot([n90], [0.9], marker="o", color=DARK, markersize=5)
+                    xytext=(6, -14 - 12 * i), fontsize=8, color=INK)
+        ax.plot([n90], [0.9], marker=markers[name], color=DARK, markersize=5)
 
     ax.axhline(0.9, color=GRID, linewidth=1)
     style_axes(ax, "number of principal components", "cumulative variance explained",

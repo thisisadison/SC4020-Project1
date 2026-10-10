@@ -139,6 +139,45 @@ def plot_parameter_sweeps(df, dataset="clustered"):
 
 
 
+def plot_sweeps_by_method(df, datasets=("random", "clustered")):
+    """
+    Report section 4.2: one figure per method, one panel per hyperparameter sweep,
+    one line per synthetic dataset (solid = clustered, dashed = random)
+    """
+    styles = {"random": "--", "clustered": "-"}
+    markers = {"random": "s", "clustered": "o"}  # second cue besides line style, so overlapping lines stay readable
+    groups = {
+        "LSH": [("nbits", "nbits", lambda r: r)],
+        "PQ": [("nbits (m=32)", "nbits", lambda r: r[r["m"] == 32]),
+               ("m (nbits=10)", "m", lambda r: r[r["nbits"] == 10])],
+        "HNSW": [("efSearch (M=32)", "efSearch", lambda r: r[r["M"] == 32]),
+                 ("M (efSearch=64)", "M", lambda r: r[r["efSearch"] == 64])],
+    }
+
+    for method, panels in groups.items():
+        fig, axes = plt.subplots(1, len(panels), figsize=(4.6 * len(panels), 3.6), sharey=True, squeeze=False)
+        axes = axes[0]
+
+        for ax, (title, key, pick) in zip(axes, panels):
+            for dataset in datasets:
+                rows = pick(select(df, method, dataset)).sort_values(key)
+                xs = rows[key].astype(int).tolist()
+                ax.plot(xs, rows["recall"], color=COLOURS[method], linestyle=styles[dataset], linewidth=2,
+                        marker=markers[dataset], markersize=6, markeredgecolor="white", markeredgewidth=0.8,
+                        label=DATASET_LABEL[dataset])
+
+            logx = max(xs) / min(xs) > 8
+            style_axes(ax, key, "recall@10" if ax is axes[0] else "", f"{method} — {title}", logx=logx)
+            ax.set_xticks(xs)
+            ax.set_xticklabels([str(x) for x in xs])
+            ax.minorticks_off()
+
+        axes[0].legend(frameon=False, fontsize=8, labelcolor=INK_MUTED, loc="upper left", handlelength=3.5)
+        fig.tight_layout()
+        save(fig, f"fig1_sweeps_{method.lower()}.png")
+
+
+
 def plot_tradeoffs(df, dataset="clustered"):
     """
     Report section 3: recall against memory, speed and build cost, all methods on one dataset
@@ -417,6 +456,7 @@ def main():
     print(f"loaded {len(df)} configurations")
 
     plot_parameter_sweeps(df)
+    plot_sweeps_by_method(df)  # section 4.2: one figure per method, random and clustered
     plot_tradeoffs(df)
     plot_dataset_effect(df)
     plot_summary_heatmap(df)
