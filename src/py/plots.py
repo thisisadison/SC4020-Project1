@@ -178,47 +178,65 @@ def plot_sweeps_by_method(df, datasets=("random", "clustered")):
 
 
 
+TRADEOFF_AXES = [
+    ("size", "index size (MB, log)", False),
+    ("speedup", "speedup vs Flat (×, log)", True),
+    ("build", "build time (s, log)", False),
+]
+
+
+def draw_tradeoff(ax, df, dataset, key, xlabel, higher_better):
+    """
+    One trade-off panel: recall against a single cost, all methods on one dataset
+    """
+    flat = df[df["dataset"] == dataset].iloc[0]  # every row carries its run's flat baseline
+    if key == "speedup":
+        ax.axvline(1, color=FLAT, linewidth=1.2, linestyle=":")
+        ax.text(1, 0.02, " Flat", fontsize=7, color=INK_MUTED, va="bottom")
+    elif key == "size":
+        ax.axvline(flat["flat_size"], color=FLAT, linewidth=1.2, linestyle=":")
+        ax.text(flat["flat_size"], 0.02, " Flat", fontsize=7, color=INK_MUTED, va="bottom", ha="right")
+
+    for method in METHODS:
+        rows = select(df, method, dataset)
+
+        ax.scatter(rows[key], rows["recall"], s=16, color=COLOURS[method], alpha=0.35, linewidths=0, zorder=2)
+
+        front = frontier(rows, key, higher_better)
+        ax.plot(front[key], front["recall"], color=COLOURS[method],
+                linewidth=2, marker="o", markersize=6, markeredgecolor="white",
+                markeredgewidth=0.8, label=method, zorder=3)
+
+        best = rows.loc[rows["recall"].idxmax()]
+        ax.annotate(method, (best[key], best["recall"]), textcoords="offset points",
+                    xytext=(5, 4), fontsize=8, color=INK)
+
+    style_axes(ax, xlabel, "recall@10", "", logx=True)
+
+
+
 def plot_tradeoffs(df, dataset="clustered"):
     """
-    Report section 3: recall against memory, speed and build cost, all methods on one dataset
+    Report section 4.3: recall against memory, speed and build cost, all methods on one dataset.
+    Saves the three panels stacked in one figure and as three separate figures
     """
-    axes_spec = [
-        ("size", "index size (MB, log)", False, "flat_size"),
-        ("speedup", "speedup vs Flat (×, log)", True, None),
-        ("build", "build time (s, log)", False, "flat_build"),
-    ]
-
-    fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), sharey=True)
-    flat = df[df["dataset"] == dataset].iloc[0]  # every row carries its run's flat baseline
-
-    for ax, (key, xlabel, higher_better, ref) in zip(axes, axes_spec):
-        if key == "speedup":
-            ax.axvline(1, color=FLAT, linewidth=1.2, linestyle=":")
-            ax.text(1, 0.02, " Flat", fontsize=7, color=INK_MUTED, va="bottom")
-        elif key == "size":
-            ax.axvline(flat["flat_size"], color=FLAT, linewidth=1.2, linestyle=":")
-            ax.text(flat["flat_size"], 0.02, " Flat", fontsize=7, color=INK_MUTED, va="bottom", ha="right")
-
-        for method in METHODS:
-            rows = select(df, method, dataset)
-
-            ax.scatter(rows[key], rows["recall"], s=16, color=COLOURS[method], alpha=0.35, linewidths=0, zorder=2)
-
-            front = frontier(rows, key, higher_better)
-            ax.plot(front[key], front["recall"], color=COLOURS[method],
-                    linewidth=2, marker="o", markersize=6, markeredgecolor="white",
-                    markeredgewidth=0.8, label=method, zorder=3)
-
-            best = rows.loc[rows["recall"].idxmax()]
-            ax.annotate(method, (best[key], best["recall"]), textcoords="offset points",
-                        xytext=(5, 4), fontsize=8, color=INK)
-
-        style_axes(ax, xlabel, "recall@10" if ax is axes[0] else "", "", logx=True)
-
+    fig, axes = plt.subplots(3, 1, figsize=(6.4, 10.5))  # stacked vertically, one cost per row
+    for ax, (key, xlabel, higher_better) in zip(axes, TRADEOFF_AXES):
+        draw_tradeoff(ax, df, dataset, key, xlabel, higher_better)
     axes[0].legend(frameon=False, fontsize=8, loc="upper left", labelcolor=INK_MUTED)
-    fig.suptitle(f"Method trade-offs — {DATASET_LABEL[dataset]} data "
-                 f"(faint points: all configs; line: best achievable)", fontsize=11, color=INK, y=1.03)
+    fig.suptitle(f"Method trade-offs — {DATASET_LABEL[dataset]} data\n"
+                 f"(faint points: all configs; line: best achievable)", fontsize=11, color=INK, y=1.0)
+    fig.tight_layout(h_pad=2.0)
     save(fig, "fig2_method_tradeoffs.png")
+
+    for key, xlabel, higher_better in TRADEOFF_AXES:
+        fig, ax = plt.subplots(figsize=(6.4, 3.6))
+        draw_tradeoff(ax, df, dataset, key, xlabel, higher_better)
+        ax.legend(frameon=False, fontsize=8, loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3,
+                  labelcolor=INK_MUTED)  # above the plot area so no point is hidden
+        ax.set_title(f"{DATASET_LABEL[dataset]} data (faint points: all configs; line: best achievable)",
+                     fontsize=9, color=INK_MUTED, pad=24)
+        save(fig, f"fig2_tradeoff_{key}.png")
 
 
 
@@ -309,14 +327,15 @@ def plot_summary_heatmap(df):
 
 
 
-def plot_bubbles(df):
+def plot_bubbles(df, datasets=DATASETS, tag=""):
     """
     Recall against speedup, bubble area proportional to index size, one panel per dataset
     """
     scale = 2.5  # points^2 per MB
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4.2), sharey=True)
+    fig, axes = plt.subplots(1, len(datasets), figsize=(4.4 * len(datasets) + 0.6, 4.2), sharey=True, squeeze=False)
+    axes = axes[0]
 
-    for ax, dataset in zip(axes, DATASETS):
+    for ax, dataset in zip(axes, datasets):
         flat = df[df["dataset"] == dataset].iloc[0]
         ax.scatter([1], [1], s=flat["flat_size"] * scale, color=FLAT, alpha=0.35, edgecolors="white", linewidths=1.5, zorder=2)
         ax.annotate("Flat", (1, 1), textcoords="offset points", xytext=(0, -17), ha="center", fontsize=7, color=INK_MUTED)
@@ -336,10 +355,12 @@ def plot_bubbles(df):
 
     method_keys = [Line2D([], [], marker="o", linestyle="", markersize=8, color=COLOURS[m], alpha=0.7, label=m) for m in METHODS]
     size_keys = [plt.scatter([], [], s=mb * scale, color=FLAT, alpha=0.35, label=f"{mb} MB") for mb in (5, 50, 150)]
-    fig.legend(handles=method_keys + size_keys, loc="lower center", ncol=6, frameon=False, fontsize=8,
-               labelcolor=INK_MUTED, bbox_to_anchor=(0.5, -0.1), labelspacing=1.5, handletextpad=1.2, columnspacing=2)
+    ncol = 6 if len(datasets) > 1 else 3
+    fig.legend(handles=method_keys + size_keys, loc="lower center", ncol=ncol, frameon=False, fontsize=8,
+               labelcolor=INK_MUTED, bbox_to_anchor=(0.5, -0.1 if ncol == 6 else -0.2), labelspacing=1.5,
+               handletextpad=1.2, columnspacing=2)
     fig.suptitle("Recall, speed and memory together — bubble area = index size", fontsize=11, color=INK, y=1.03)
-    save(fig, "fig5_bubbles.png")
+    save(fig, f"fig5_bubbles{tag}.png")
 
 
 
@@ -460,7 +481,8 @@ def main():
     plot_tradeoffs(df)
     plot_dataset_effect(df)
     plot_summary_heatmap(df)
-    plot_bubbles(df)
+    plot_bubbles(df, ("random", "clustered"), "_synthetic")
+    plot_bubbles(df, ("financebench",), "_financebench")  # section 5.2
     plot_memory_breakdown(df)
     plot_build_time(df)
 
