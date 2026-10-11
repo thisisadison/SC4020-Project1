@@ -235,6 +235,25 @@ Standard LSH splits every hyperplane at 0; the ablation learns each split point 
 | 2048 | 0.6993 | 0.6220 | -0.0773 | 7.09 | 28.44 |
 | 4096 | 0.7913 | 0.6660 | -0.1253 | 22.69 | 56.88 |
 
+### `lsh_diagnostics.py` — why learned thresholds help clustered data but hurt FinanceBench
+
+**Bit balance, nbits=1024:** mean |p − 0.5| over bits, where p is the share of database vectors with bit 1 (0 = every hyperplane splits the database in half).
+
+| dataset | split at 0 | learned |
+|---|---|---|
+| random | 0.003 | 0.002 |
+| clustered | 0.146 | 0.003 |
+| FinanceBench | 0.154 | 0.023 |
+
+**FinanceBench queries: analyst questions vs 150 held-out passages** (removed from the database so they can't match themselves). Cosine between the mean question and the mean passage: 0.720.
+
+| nbits | queries | recall@10 (split at 0) | recall@10 (learned) | change |
+|---|---|---|---|---|
+| 1024 | questions | 0.613 | 0.563 | −0.050 |
+| 1024 | passages | 0.761 | 0.773 | +0.011 |
+| 4096 | questions | 0.791 | 0.666 | −0.125 |
+| 4096 | passages | 0.873 | 0.832 | −0.041 |
+
 ## Ablation — PQ with and without IVF
 
 IVF-PQ puts an inverted file in front of PQ: k-means splits the database into nlist=1024 cells, each code stores the vector's offset from its cell centre, and a query scans only the nprobe nearest cells. Plain PQ scans every code. Both use m=192, nbits=8.
@@ -268,6 +287,82 @@ IVF-PQ puts an inverted file in front of PQ: k-means splits the database into nl
 | IVF-PQ | 8 | 0.7267 | 19.71 | 0.0495 | 11.4× | 21.75 |
 | IVF-PQ | 32 | 0.8633 | 19.71 | 0.0846 | 6.7× | 21.75 |
 | IVF-PQ | 128 | 0.9280 | 19.71 | 0.2731 | 2.1× | 21.75 |
+
+## Improvement — OPQ vs PQ
+
+OPQ learns a 384×384 orthogonal rotation before PQ (FAISS `OPQMatrix` + `IndexPQ` via `IndexPreTransform`, the non-parametric solution of Ge et al., 50 alternating iterations). Both use nbits=8, so codes are the same size (m bytes per vector); PQ and OPQ are built in the same run against the same Flat baseline. Reconstruction MSE is the mean squared distance between a vector and its decoded code, over 20,000 sampled database vectors. Run with `python src/py/opq.py`; results in `src/txt/opq_results.csv`, figure `fig8_opq_vs_pq.png`.
+
+### `run_opq_comparison()` — random data, L2 ground truth, k=10
+
+**Baseline (Flat):** build 0.041s · latency 0.1268s · size 146.48 MB
+
+| index | m | recall@10 | reconstruction MSE | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|---|
+| PQ | 16 | 0.0360 | 0.68761 | 19.07 | 0.0108 | 11.7× | 1.90 |
+| OPQ | 16 | 0.0330 | 0.68393 | 230.63 | 0.0133 | 9.5× | 2.46 |
+| PQ | 32 | 0.1060 | 0.46794 | 36.44 | 0.0216 | 5.9× | 3.43 |
+| OPQ | 32 | 0.1260 | 0.46440 | 410.68 | 0.0283 | 4.5× | 3.99 |
+| PQ | 64 | 0.2510 | 0.21386 | 71.65 | 0.0574 | 2.2× | 6.48 |
+| OPQ | 64 | 0.2750 | 0.21143 | 787.31 | 0.0575 | 2.2× | 7.04 |
+| PQ | 192 | 0.7790 | 0.00857 | 206.05 | 0.2177 | 0.6× | 18.69 |
+| OPQ | 192 | 0.7640 | 0.00852 | 2216.58 | 0.2113 | 0.6× | 19.25 |
+
+### `run_opq_comparison()` — clustered+correlated data, L2 ground truth, k=10
+
+**Baseline (Flat):** build 0.049s · latency 0.1230s · size 146.48 MB
+
+| index | m | recall@10 | reconstruction MSE | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|---|
+| PQ | 16 | 0.0450 | 0.02203 | 18.84 | 0.0191 | 6.4× | 1.90 |
+| OPQ | 16 | 0.1010 | 0.01754 | 223.85 | 0.0116 | 10.6× | 2.46 |
+| PQ | 32 | 0.0960 | 0.01755 | 36.03 | 0.0213 | 5.8× | 3.43 |
+| OPQ | 32 | 0.1830 | 0.01193 | 402.88 | 0.0228 | 5.4× | 3.99 |
+| PQ | 64 | 0.2130 | 0.01066 | 71.14 | 0.0570 | 2.2× | 6.48 |
+| OPQ | 64 | 0.3700 | 0.00616 | 776.77 | 0.0580 | 2.1× | 7.04 |
+| PQ | 192 | 0.7240 | 0.00113 | 205.72 | 0.2084 | 0.6× | 18.69 |
+| OPQ | 192 | 0.7310 | 0.00102 | 2206.63 | 0.2173 | 0.6× | 19.25 |
+
+### `run_opq_comparison()` — FinanceBench, L2 ground truth, k=10
+
+**Baseline (Flat):** build 0.047s · latency 0.3139s · size 152.59 MB
+
+| index | m | recall@10 | reconstruction MSE | build (s) | latency (s) | speedup vs Flat | size (MB) |
+|---|---|---|---|---|---|---|---|
+| PQ | 16 | 0.2947 | 0.43562 | 18.92 | 0.0193 | 16.3× | 1.96 |
+| OPQ | 16 | 0.4133 | 0.27448 | 225.15 | 0.0240 | 13.1× | 2.53 |
+| PQ | 32 | 0.4840 | 0.32265 | 36.68 | 0.0346 | 9.1× | 3.55 |
+| OPQ | 32 | 0.5847 | 0.17157 | 405.36 | 0.0425 | 7.4× | 4.12 |
+| PQ | 64 | 0.6793 | 0.15674 | 71.91 | 0.0877 | 3.6× | 6.73 |
+| OPQ | 64 | 0.7467 | 0.07268 | 780.87 | 0.0905 | 3.5× | 7.30 |
+| PQ | 192 | 0.9287 | 0.00659 | 206.95 | 0.3154 | 1.0× | 19.45 |
+| OPQ | 192 | 0.9253 | 0.00649 | 2212.13 | 0.3211 | 1.0× | 20.01 |
+
+
+## Success and failure cases — FinanceBench, per question
+
+`python src/py/cases.py`: per-question recall@10 for the 150 questions at mid-range settings (LSH nbits=1024, PQ m=32 nbits=8, HNSW M=32 efSearch=64, graph built single-threaded so it reproduces exactly). Passage texts are rebuilt from the PDFs with the same chunking (`data/financebench_texts.json`). Output: `src/txt/cases.txt`, `src/txt/cases_per_query.csv`, `fig10_cases_financebench.png`.
+
+**gap** = cosine of the 10th exact neighbour − cosine of the 100th (how clearly the true top-10 stand out). Median 0.071.
+
+| method | mean recall | recall, low-gap half | recall, high-gap half | Spearman ρ (gap, recall) |
+|---|---|---|---|---|
+| LSH (nbits=1024) | 0.613 | 0.535 | 0.692 | 0.58 |
+| PQ (m=32, nbits=8) | 0.484 | 0.409 | 0.559 | 0.55 |
+| HNSW (M=32, efSearch=64) | 0.939 | 0.925 | 0.953 | 0.41 |
+
+The exact top-10 contains a page that holds the answer (FinanceBench `evidence_page_num`, 0-indexed, checked against the evidence text) for only 39% of questions.
+
+**Worked examples** (full text in `src/txt/cases.txt`):
+
+| case | question | gap | LSH | PQ | HNSW |
+|---|---|---|---|---|---|
+| success | Q7, 3M: "Does 3M maintain a stable trend of dividend distribution?" | 0.114 | 0.9 | 0.6 | 1.0 |
+| failure, no clear neighbours | Q149, Walmart: 3-year average unadjusted EBITDA margin | 0.058 | 0.3 | 0.3 | 0.6 |
+| failure, HNSW local minimum | Q140, Ulta Beauty: share of FY2023 stock repurchases in Q4 | 0.089 | 0.9 | 0.6 | 0.0 |
+
+- Q7: the question names the company and the topic; the top passages are all 3M dividend passages, well above the rest.
+- Q149: a generic, formula-style question. The exact top-3 are Verizon and Amcor EBITDA passages (cos 0.565, 0.557, 0.555), and many EBITDA passages from other filings sit just below, so small approximation errors swap them.
+- Q140: the true top-10 are all Ulta passages, but at efSearch=64 HNSW returns repurchase tables from Best Buy, Walmart, Costco and others (top-1 cos 0.607 vs true 10th 0.616). Raising efSearch on the same graph: 64 → 0.0, 128 → 1.0, 256 → 1.0. *The greedy walk settles in a neighbouring topic region (a local minimum); a longer candidate list escapes it.*
 
 ---
 
@@ -387,7 +482,15 @@ EDA numbers are computed on the normalised vectors of all three datasets.
 
 - **Improvements:**
   - **IVF (tested, see the IVF ablation):** partition the database into cells and probe only a few, making PQ's scan sub-linear. This addresses PQ being slower than Flat.
-  - **OPQ (discussed):** learn a rotation before quantising, so correlated dimensions share a subspace.
+  - **OPQ (tested, see the OPQ section):** learn a rotation before quantising, so correlated dimensions share a subspace.
+    - Helps exactly where the variance is uneven: clustered recall roughly doubles at m = 16–64 (0.213 → 0.370 at m=64, MSE −42%); FinanceBench +0.07 to +0.12 recall (MSE −37 to −54%); random data unchanged (MSE −1%). *An isotropic Gaussian has the same variance in every direction, so no rotation can balance the subspaces further.*
+    - The gain vanishes at m=192 on every dataset. *2-D subspaces are already finely quantised.*
+    - Cost: about 11× PQ's build time (FinanceBench m=32: 37s → 405s; m=192: about 37 min), a fixed 0.56 MB rotation, and slightly slower search (each query is rotated first).
+    - Complements IVF: OPQ improves accuracy per byte, IVF improves search speed.
+  - **Learned LSH thresholds (tested, see the LSH ablation):** help clustered data (+0.075 at 4096 bits) but hurt FinanceBench (−0.125).
+    - Both datasets are split unevenly at 0 (bit imbalance 0.146 and 0.154), and learned thresholds fix that on both, so imbalance alone doesn't explain the difference.
+    - The FinanceBench queries are questions, not passages (mean-vector cosine 0.72), while the medians are learned from passages. With held-out passages as queries the change is +0.011 at 1024 bits (vs −0.050 with questions) and −0.041 at 4096 (vs −0.125).
+    - The remaining drop: an offset hyperplane no longer gives P(same bit) = 1 − θ/π, so Hamming distance tracks angle less well.
   - **HNSW + PQ (discussed):** store PQ codes in the graph to cut HNSW's memory.
 - **Limitations:**
   - CPU-only laptop timings, with run-to-run noise.
@@ -398,4 +501,3 @@ EDA numbers are computed on the normalised vectors of all three datasets.
   - Parameters were swept one at a time around M=32 / efSearch=64 and m=32 / nbits=10, not as a full grid.
 - **Open items:**
   - A full parameter grid, especially HNSW M × efSearch on random data, to settle LSH vs HNSW.
-  - Saving chunk texts for the FinanceBench success and failure cases.
